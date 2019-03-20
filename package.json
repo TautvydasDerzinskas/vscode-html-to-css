@@ -32,7 +32,7 @@
 		"commands": [
 			{
 				"command": "extension.htmlToCss",
-				"title": "Paste HTML as style selector"
+				"title": "Convert html to Css/Less/Sass"
 			}
 		]
 	},
