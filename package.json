@@ -22,19 +22,45 @@
 		"vscode": "^1.25.0"
 	},
 	"categories": [
-		"Other"
+		"Other",
+		"Formatters"
 	],
 	"activationEvents": [
-		"onCommand:extension.htmlToCss"
+		"onCommand:htmlToCss.paste"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [
-			{
-				"command": "extension.htmlToCss",
-				"title": "Convert html to Css/Less/Sass"
+		"commands": [{
+			"command": "htmlToCss.paste",
+			"title": "Convert html to Css/Less/Sass"
+		}],
+		"keybindings": [{
+			"command": "htmlToCss.paste",
+			"key": "ctrl+alt+v",
+			"mac": "cmd+alt+v",
+			"when": "editorTextFocus && !editorReadOnly"
+		}],
+		"configuration": {
+			"type": "object",
+			"title": "Html to Css/Less/Sass configuration",
+			"properties": {
+				"htmlToCss.hideTags": {
+					"type": "boolean",
+					"default": true,
+					"description": "Hide tag selector if element has class or id."
+				},
+				"htmlToCss.convertBEM": {
+					"type": "boolean",
+					"default": true,
+					"description": "Recognize BEM classes and split them accordingly."
+				},
+				"htmlToCss.preappendHtml": {
+					"type": "boolean",
+					"default": false,
+					"description": "Pre-append comment containing transformed html structure."
+				}
 			}
-		]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

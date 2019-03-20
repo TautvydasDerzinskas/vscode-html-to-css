@@ -1,3 +1,4 @@
+import { workspace } from 'vscode';
 import { JSDOM } from 'jsdom';
 import utilityService from './utility.service';
 import IOptions from '../interfaces/options.interface';
@@ -7,11 +8,21 @@ class HtmlToScss {
     private options: IOptions = {
         reduceSiblings: true,
         combineParents: true,
-        hidetags: true,
+        hideTags: true,
         convertBEM: true,
+        preappendHtml: true,
     };
 
-    constructor() {}
+    constructor() {
+        this.updateConfiguration();
+    }
+
+    public updateConfiguration() {
+        const configuration = workspace.getConfiguration('htmlToCss');
+        this.options.hideTags = configuration.get('hideTags', true);
+        this.options.convertBEM = configuration.get('convertBEM', true);
+        this.options.preappendHtml = configuration.get('preappendHtml', false);
+    }
 
     public getFileExtension(filePath: string) {
         const tempArray = filePath.split('.');
@@ -31,12 +42,17 @@ class HtmlToScss {
         const isCss = fileExtension === 'css';
 
         const extractedHtml = this.extractHtml(dom);
-        const tagsRemoved = (this.options.hidetags && !isCss) ? this.removeTags(extractedHtml) : extractedHtml;
+        const tagsRemoved = (this.options.hideTags && !isCss) ? this.removeTags(extractedHtml) : extractedHtml;
         const reduced = (this.options.reduceSiblings) ? this.reduceSiblings(tagsRemoved) : tagsRemoved;
         const combinedParents = (this.options.combineParents) ? this.combineSimilarParents(reduced) : reduced;
         const BEMConverted = (this.options.convertBEM && !isCss) ? this.convertBEM(combinedParents) : combinedParents;
         const buttonStates = this.addButtonStates(BEMConverted);
         const reducedTiers = this.reduceTiers(buttonStates, 4);
+
+        let prefix = '';
+        if (this.options.preappendHtml) {
+            prefix += `/*\n*${dom.replace(/\n/g, '\n*').trim()}\n*/`;
+        }
 
         let styleSelectors = '';
         if (isCss) {
@@ -44,7 +60,7 @@ class HtmlToScss {
         } else {
             styleSelectors = this.convertToScss(reducedTiers);
         }
-        return styleSelectors;
+        return prefix + styleSelectors;
     }
 
     private removeTags(dom: IDomObject[]) {

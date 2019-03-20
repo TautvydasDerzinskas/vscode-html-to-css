@@ -1,34 +1,48 @@
-import * as vscode from 'vscode';
+import {
+  window,
+  commands,
+  ExtensionContext,
+  TextEditor,
+  TextEditorEdit,
+  Selection,
+  workspace
+} from 'vscode';
 import htmlConverterService from './services/html-converter.service';
 
-export function activate(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('extension.htmlToCss', () => {
-    const editor = vscode.window.activeTextEditor;
+export function activate(context: ExtensionContext) {
+  const commandDisposable = commands.registerCommand('htmlToCss.paste', () => {
+    const editor = window.activeTextEditor;
 
     if (editor) {
       const start = editor.selection.start;
-      const filePath = (editor as vscode.TextEditor).document.fileName.toLowerCase();
+      const filePath = (editor as TextEditor).document.fileName.toLowerCase();
       const fileExtension = htmlConverterService.getFileExtension(filePath);
 
-      vscode.commands.executeCommand('editor.action.clipboardPasteAction').then(() => {
+      commands.executeCommand('editor.action.clipboardPasteAction').then(() => {
         const end = editor.selection.end;
-        const selectionToIndent = new vscode.Selection(start.line, start.character, end.line, end.character);
+        const selectionToIndent = new Selection(start.line, start.character, end.line, end.character);
         const text = editor.document.getText(selectionToIndent);
 
         if (htmlConverterService.isStringHtml(text)) {
-          editor.edit((editBuilder: vscode.TextEditorEdit) => {
+          editor.edit((editBuilder: TextEditorEdit) => {
             editBuilder.replace(selectionToIndent, htmlConverterService.convert(text, fileExtension));
 
-            vscode.window.showInformationMessage('HTML successfuly converted');
+            window.showInformationMessage('HTML successfuly converted');
           });
         } else {
-          vscode.window.showErrorMessage('Your clipboard value does not contain valid html structure');
+          window.showErrorMessage('Your clipboard value does not contain valid html structure');
         }
       });
     }
   });
 
-  context.subscriptions.push(disposable);
+  const configurationListenerDisposable = workspace.onDidChangeConfiguration(e => {
+    if (e.affectsConfiguration('htmlToCss')) {
+      htmlConverterService.updateConfiguration();
+    }
+  });
+
+  context.subscriptions.push(commandDisposable, configurationListenerDisposable);
 }
 
 export function deactivate() { }
