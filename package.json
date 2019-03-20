@@ -4,10 +4,15 @@
 	"description": "Copy HTML dom structure and paste it as css/less/sass selector syntax",
 	"version": "1.0.0",
 	"publisher": "Tautvydas Derzinskas",
+	"icon": "images/html2css_transparent.png",
 	"author": {
 		"name": "Tautvydas Derzinskas",
 		"email": "tautvydasuk@gmail.com",
 		"url": "https://www.tautvydas.info"
+	},
+	"galleryBanner": {
+		"color": "#313944",
+		"theme": "dark"
 	},
 	"repository": {
 		"type": "git",
