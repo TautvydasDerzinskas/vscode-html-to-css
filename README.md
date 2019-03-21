@@ -15,6 +15,8 @@
 - [Preview](#preview)
 - [Usage](#usage)
 - [Installation](#installation)
+- [Configuration](#configuration)
+- [Credits](#credits)
 - [License](#license)
 - [Changelog](CHANGELOG.md)
 
@@ -44,20 +46,32 @@ Via Quick Open:
 
 1. [Download](https://code.visualstudio.com/download), install and open VS Code
 2. Press `CMD+P` to open the Quick Open dialog
-3. Type `ext install html-to-css`
+3. Type `ext install tautvydasderzinskas.vscode-html-to-css`
 4. Click the *Install* button, then the *Enable* button
 
 Via the Extensions tab:
 
 1. Click the extensions tab or press `CMD+SHIFT+X`
-2. Search for *html to css*
-3. Click the *Install* button, then the *Enable* button
+2. Search for `html for css/less/sass`
+3. Click the `Install` button, then the `Enable` button
 
 Via the command line:
 
 1. Open a command-line prompt
 2. Run `code --install-extension TautvydasDerzinskas.vscode-html-to-css`
 
+## Configuration
+
+Extension provides these [User and Workspace settings](https://code.visualstudio.com/docs/getstarted/settings):
+- `htmlToCss.hideTags` - hide tag selector if element has class or id (default: ***true***)
+- `htmlToCss.convertBEM` - recognize BEM classes and split them accordingly (default: ***true***)
+- `htmlToCss.preappendHtml` - pre-append comment containing transformed html structure (default: ***false***)
+
+## Credits
+
+This project uses big portion of logic written by [Harry Horton](https://github.com/Johnhhorton).
+
+Please check out his awesome [sassifyhtml project](https://github.com/Johnhhorton/sassifyhtml)!
 
 ## License
 The repository code is open-sourced software licensed under the [MIT license](https://github.com/SlimDogs/make-youtube-great-again/blob/master/LICENSE?raw=true).
