@@ -10,7 +10,7 @@ class HtmlToScss {
         combineParents: true,
         hideTags: true,
         convertBEM: true,
-        preappendHtml: true,
+        preappendHtml: false,
     };
 
     constructor() {
@@ -42,7 +42,7 @@ class HtmlToScss {
         const isCss = fileExtension === 'css';
 
         const extractedHtml = this.extractHtml(dom);
-        const tagsRemoved = (this.options.hideTags && !isCss) ? this.removeTags(extractedHtml) : extractedHtml;
+        const tagsRemoved = (this.options.hideTags) ? this.removeTags(extractedHtml) : extractedHtml;
         const reduced = (this.options.reduceSiblings) ? this.reduceSiblings(tagsRemoved) : tagsRemoved;
         const combinedParents = (this.options.combineParents) ? this.combineSimilarParents(reduced) : reduced;
         const BEMConverted = (this.options.convertBEM && !isCss) ? this.convertBEM(combinedParents) : combinedParents;
