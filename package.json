@@ -35,16 +35,20 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [{
-			"command": "htmlToCss.paste",
-			"title": "Convert html to Css/Less/Sass"
-		}],
-		"keybindings": [{
-			"command": "htmlToCss.paste",
-			"key": "ctrl+alt+v",
-			"mac": "cmd+alt+v",
-			"when": "editorTextFocus && !editorReadOnly"
-		}],
+		"commands": [
+			{
+				"command": "htmlToCss.paste",
+				"title": "Convert html to Css/Less/Sass"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "htmlToCss.paste",
+				"key": "ctrl+alt+v",
+				"mac": "cmd+alt+v",
+				"when": "editorTextFocus && !editorReadOnly"
+			}
+		],
 		"configuration": {
 			"type": "object",
 			"title": "Html to Css/Less/Sass configuration",
