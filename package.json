@@ -2,7 +2,7 @@
 	"name": "vscode-html-to-css",
 	"displayName": "Html to css/less/sass",
 	"description": "Copy HTML dom structure and paste it as css/less/sass selector syntax",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"publisher": "tautvydasderzinskas",
 	"icon": "images/html2css_transparent.png",
 	"author": {

@@ -8,6 +8,7 @@ import {
   workspace
 } from 'vscode';
 import htmlConverterService from './services/html-converter.service';
+import * as manifest from '../package.json';
 
 export function activate(context: ExtensionContext) {
   const commandDisposable = commands.registerCommand('htmlToCss.paste', () => {
@@ -43,6 +44,11 @@ export function activate(context: ExtensionContext) {
   });
 
   context.subscriptions.push(commandDisposable, configurationListenerDisposable);
+
+  // tslint:disable-next-line: no-console
+  console.info(
+    `[vscode-html-to-css] v${manifest.version} activated!`,
+  );
 }
 
 export function deactivate() { }
