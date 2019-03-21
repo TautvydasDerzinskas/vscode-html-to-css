@@ -1,8 +1,33 @@
 language: node_js
+
 node_js:
   - "8"
-cache:
-  directories:
-    - "node_modules"
+
+install:
+  - npm install -g vsce
+  - npm install -g typescript
+  - npm install
+
 script:
-    - npm run lint
+  - npm run lint
+  - vsce package
+
+deploy:
+  # deploy to github release
+  - provider: releases
+    api_key: $GIT_TOKEN
+    file_glob: true
+    file: "*.vsix"
+    skip_cleanup: true
+    on:
+      tags: true
+      all_branches: true
+      condition: "$TRAVIS_COMMIT_MESSAGE =~ chore(release)"
+  # deploy to vscode extension market
+  - provider: script
+    script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
+    skip_cleanup: true
+    on:
+      tags: true
+      all_branches: true
+      condition: "$TRAVIS_COMMIT_MESSAGE =~ chore(release)"
