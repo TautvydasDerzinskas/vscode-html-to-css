@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/SlimDogs/vscode-html-to-css"><img src="images/html2css_dark.png" alt="Visual Studio Code extension: Html to css" title="Visual Studio Code extension: Html to css" /></a>
+  <a href="https://github.com/SlimDogs/vscode-html-to-css"><img src="https://raw.githubusercontent.com/SlimDogs/vscode-html-to-css/master/images/html2css_dark.png" alt="Visual Studio Code extension: Html to css" title="Visual Studio Code extension: Html to css" /></a>
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@ Visual Studio Code extension enables developers to convert Html code structure t
 Please see preview & usage for more information.
 
 ## Preview
-<a href="images/html2css_preview.gif" target="_blank"><img width="800px" src="images/html2css_preview.gif" alt="Preview" title="Preview" /></a>
+<a href="images/html2css_preview.gif" target="_blank"><img width="800px" src="https://raw.githubusercontent.com/SlimDogs/vscode-html-to-css/master/images/html2css_preview.gif" alt="Preview" title="Preview" /></a>
 
 ## Usage
 
