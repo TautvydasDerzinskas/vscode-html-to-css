@@ -76,9 +76,9 @@ class HtmlToScss {
         return newDom;
     }
 
-    private getClickSelectors(domElement: IDomObject, spacing: string) {
+    private getClickSelectors(domElement: IDomObject, spacing = '  ') {
         if (domElement.metaTag && (domElement.metaTag === 'a' || domElement.metaTag === 'button')) {
-            return `\n${spacing}&:hover{\n\n${spacing}}\n${spacing}&:active{\n\n${spacing}}\n${spacing}&:focus{\n\n${spacing}}`;
+            return `${spacing}&:hover {\n\n${spacing}}\n${spacing}&:active {\n\n${spacing}}\n${spacing}&:focus {\n\n${spacing}}`;
         } else {
             return '';
         }
@@ -307,7 +307,7 @@ class HtmlToScss {
             const ids = (el.ids.length) ? '#' + el.ids.join('#') : '';
             const tag = el.tag;
             if (classes !== '' || ids !== '' || tag !== '') {
-                sass += `\n${spacing}${el.tag}${ids}${classes} {${this.convertToScss(el.children, nest + 1) + this.getClickSelectors(el, spacing + singleSpace)}\n${spacing}}`;
+                sass += `\n${spacing}${el.tag}${ids}${classes} {${this.convertToScss(el.children, nest + 1)}\n${this.getClickSelectors(el, spacing + singleSpace)}\n${spacing}}`;
             } else {
                 sass += `${this.convertToScss(el.children, nest)}`;
             }
@@ -323,7 +323,7 @@ class HtmlToScss {
             const ids = (el.ids.length) ? '#' + el.ids.join('#') : '';
             const tag = el.tag;
             if (classes !== '' || ids !== '' || tag !== '') {
-                css += `${el.tag}${ids}${classes} {\n\n}\n${this.convertToCss(el.children) + this.getClickSelectors(el, '')}`;
+                css += `${el.tag}${ids}${classes} {\n${this.getClickSelectors(el)}\n}\n${this.convertToCss(el.children)}`;
             } else {
                 css += `${this.convertToCss(el.children)}\n`;
             }
