@@ -46,8 +46,7 @@ class HtmlToScss {
         const reduced = (this.options.reduceSiblings) ? this.reduceSiblings(tagsRemoved) : tagsRemoved;
         const combinedParents = (this.options.combineParents) ? this.combineSimilarParents(reduced) : reduced;
         const BEMConverted = (this.options.convertBEM && !isCss) ? this.convertBEM(combinedParents) : combinedParents;
-        const buttonStates = this.addButtonStates(BEMConverted);
-        const reducedTiers = this.reduceTiers(buttonStates, 4);
+        const reducedTiers = this.reduceTiers(BEMConverted, 4);
 
         let prefix = '';
         if (this.options.preappendHtml) {
@@ -77,31 +76,12 @@ class HtmlToScss {
         return newDom;
     }
 
-    private addButtonStates(dom: IDomObject[]) {
-        const newDom: IDomObject[] = utilityService.deepCopy(dom);
-        newDom.forEach(el => {
-            if (el.tag === 'a' || el.tag === 'button') {
-                el.children = el.children.concat([{
-                    tag: '',
-                    ids: [],
-                    classes: ['&:hover'],
-                    children: []
-                }, {
-                    tag: '',
-                    ids: [],
-                    classes: ['&:active'],
-                    children: []
-                }, {
-                    tag: '',
-                    ids: [],
-                    classes: ['&:focus'],
-                    children: []
-                }]);
-            }
-            el.children = this.addButtonStates(el.children);
-        });
-
-        return newDom;
+    private getClickSelectors(domElement: IDomObject, spacing: string) {
+        if (domElement.metaTag && (domElement.metaTag === 'a' || domElement.metaTag === 'button')) {
+            return `\n${spacing}&:hover{\n\n${spacing}}\n${spacing}&:active{\n\n${spacing}}\n${spacing}&:focus{\n\n${spacing}}`;
+        } else {
+            return '';
+        }
     }
 
     private reduceSiblings(dom: IDomObject[]) {
@@ -307,6 +287,7 @@ class HtmlToScss {
                 const ids = (el.id === '') ? [] : el.id.split(' ');
                 nodes.push({
                     tag: el.nodeName.toLowerCase(),
+                    metaTag: el.nodeName.toLowerCase(),
                     classes: utilityService.toArray(el.classList),
                     ids: ids,
                     children: this.extractHtml(el.children)
@@ -319,13 +300,14 @@ class HtmlToScss {
 
     private convertToScss(DOMObject: IDomObject[], nest = 1) {
         let sass = '';
-        const spacing = '  '.repeat(nest);
+        const singleSpace = '  ';
+        const spacing = singleSpace.repeat(nest);
         DOMObject.forEach(el => {
             const classes = this.getDottedClasses(el);
             const ids = (el.ids.length) ? '#' + el.ids.join('#') : '';
             const tag = el.tag;
             if (classes !== '' || ids !== '' || tag !== '') {
-                sass += `\n${spacing}${el.tag}${ids}${classes} {${this.convertToScss(el.children, nest + 1)}\n${spacing}}`;
+                sass += `\n${spacing}${el.tag}${ids}${classes} {${this.convertToScss(el.children, nest + 1) + this.getClickSelectors(el, spacing + singleSpace)}\n${spacing}}`;
             } else {
                 sass += `${this.convertToScss(el.children, nest)}`;
             }
@@ -341,7 +323,7 @@ class HtmlToScss {
             const ids = (el.ids.length) ? '#' + el.ids.join('#') : '';
             const tag = el.tag;
             if (classes !== '' || ids !== '' || tag !== '') {
-                css += `${el.tag}${ids}${classes} {\n\n}\n${this.convertToCss(el.children)}`;
+                css += `${el.tag}${ids}${classes} {\n\n}\n${this.convertToCss(el.children) + this.getClickSelectors(el, '')}`;
             } else {
                 css += `${this.convertToCss(el.children)}\n`;
             }
