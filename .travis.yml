@@ -20,14 +20,14 @@ deploy:
     file: "*.vsix"
     skip_cleanup: true
     on:
-      tags: false
+      tags: true
       branch: master
-      condition: $TRAVIS_COMMIT_MESSAGE =~ release
+      condition: $TRAVIS_COMMIT_MESSAGE =~ (release)
   # deploy to vscode extension market
   - provider: script
     script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
     skip_cleanup: true
     on:
-      tags: false
+      tags: true
       branch: master
-      condition: $TRAVIS_COMMIT_MESSAGE =~ release
+      condition: $TRAVIS_COMMIT_MESSAGE =~ (release)

@@ -76,9 +76,9 @@
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'",
-		"changelog:major": "changelog -M",
-		"changelog:minor": "changelog -m",
-		"changelog:patch": "changelog -p",
+		"release:major": "npm version major -m 'chore(release): version %s' && changelog -M",
+		"release:minor": "npm version minor -m 'chore(release): version %s' && changelog -m",
+		"release:patch": "npm version patch -m 'chore(release): version %s' && changelog -p",
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"devDependencies": {
