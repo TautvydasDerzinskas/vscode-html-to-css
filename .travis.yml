@@ -10,9 +10,16 @@ install:
 
 script:
   - npm run lint
-  - vsce package
 
 deploy:
+  # update changelog & version
+  - provider: script
+    script: npm run release && vsce package && sh ./release.sh
+    skip_cleanup: true
+    on:
+      tags: false
+      branch: master
+      condition: $TRAVIS_COMMIT_MESSAGE =~ (release)
   # deploy to github release
   - provider: releases
     api_key: $GIT_TOKEN
@@ -20,14 +27,14 @@ deploy:
     file: "*.vsix"
     skip_cleanup: true
     on:
-      tags: true
+      tags: false
       branch: master
       condition: $TRAVIS_COMMIT_MESSAGE =~ (release)
   # deploy to vscode extension market
-  - provider: script
-    script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
-    skip_cleanup: true
-    on:
-      tags: true
-      branch: master
-      condition: $TRAVIS_COMMIT_MESSAGE =~ (release)
+  # - provider: script
+  #   script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
+  #   skip_cleanup: true
+  #   on:
+  #     tags: false
+  #     branch: master
+  #     condition: $TRAVIS_COMMIT_MESSAGE =~ (release)
