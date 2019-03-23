@@ -1,3 +1,17 @@
+# 1.0.0 (2019-03-23)
+
+
+### Bug Fixes
+
+* **convert-logic:** place links & buttons action selectors in right places ([3d7e0f2](https://github.com/SlimDogs/vscode-html-to-css/commit/3d7e0f2))
+* **convert-logic:** sort out spacing issues ([aad9155](https://github.com/SlimDogs/vscode-html-to-css/commit/aad9155))
+
+
+### Features
+
+* **core:** add ability to output format depending on active editor file (css vs scss/less) ([d9de6f4](https://github.com/SlimDogs/vscode-html-to-css/commit/d9de6f4))
+* **keybind+configuration:** add "ctrl/cmd+alt+v" key bind and some configuration settings ([2e467bf](https://github.com/SlimDogs/vscode-html-to-css/commit/2e467bf))
+
 #### 1.1.6 (2019-03-22)
 
 ##### Chores
@@ -70,4 +84,3 @@
 
 * **convert-logic:**  update hideTags behaviour ([0eea03ae](https://github.com/SlimDogs/vscode-html-to-css/commit/0eea03ae4e6333eb75dfa3c9336a5aab3f69d03b))
 * **various:**  few minor changes ([f87e9de8](https://github.com/SlimDogs/vscode-html-to-css/commit/f87e9de8b9ffba9000b2ac9d8ac272f0e7fec25c))
-
