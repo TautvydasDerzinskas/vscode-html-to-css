@@ -4,8 +4,10 @@
 
 <p align="center">
   <a href="#" target="_blank"><img src="https://travis-ci.org/SlimDogs/vscode-html-to-css.svg?branch=master" alt="Latest CI build status" title="Latest CI build status"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=tautvydasderzinskas.vscode-html-to-css" target="_blank"><img src="https://img.shields.io/visual-studio-marketplace/d/tautvydasderzinskas.vscode-html-to-css.svg" alt="Visual Studio Marketplace" title="Visual Studio Marketplace"></a>
   <a href="https://greenkeeper.io" target="_blank"><img src="https://badges.greenkeeper.io/SlimDogs/vscode-html-to-css.svg" alt="Greenkeeper" title="Greenkeeper"></a>
   <a href="http://commitizen.github.io/cz-cli" target="_blank"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" title="Commitizen friendly"></a>
+  <a href="https://github.com/semantic-release/semantic-release" target="_blank"><img src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="Semantic release" title="Semantic release"></a>
   <a href="https://opensource.org/licenses/MIT" target="_blank"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" title="MIT License"></a>
   <a href="https://github.com/igrigorik/ga-beacon" target="_blank"><img src="https://ga-beacon.appspot.com/UA-131052445-2/SlimDogs/vscode-html-to-css" alt="Analytics" title="Analytics"></a>
 </p>
@@ -33,11 +35,11 @@ Please see preview & usage for more information.
 Default usage:
 
 1. Copy valid Html code (including closing tags)
-2. Paste the code using key combination `CMD+ALT+V`
+2. Paste the code using key combination `CMD/CTRL+ALT+V`
 3. It will paste CSS selectors to *.css files and Sass/Less selectors to all other files.
 
 Alternative usage:
-1. Open command pallete by clicking `CTRL+SHIFT+P`
+1. Open command pallete by clicking `CMD/CTRL+SHIFT+P`
 2. Type `Convert Html to Css` and select suggested option
 
 ## Installation
@@ -45,13 +47,13 @@ Alternative usage:
 Via Quick Open:
 
 1. [Download](https://code.visualstudio.com/download), install and open VS Code
-2. Press `CMD+P` to open the Quick Open dialog
+2. Press `CMD/CTRL+P` to open the Quick Open dialog
 3. Type `ext install tautvydasderzinskas.vscode-html-to-css`
 4. Click the *Install* button, then the *Enable* button
 
 Via the Extensions tab:
 
-1. Click the extensions tab or press `CMD+SHIFT+X`
+1. Click the extensions tab or press `CMD/CTRL+SHIFT+X`
 2. Search for `html for css/less/sass`
 3. Click the `Install` button, then the `Enable` button
 
@@ -74,4 +76,5 @@ This project uses big portion of logic written by [Harry Horton](https://github.
 Please check out his awesome [sassifyhtml project](https://github.com/Johnhhorton/sassifyhtml)!
 
 ## License
-The repository code is open-sourced software licensed under the [MIT license](https://github.com/SlimDogs/make-youtube-great-again/blob/master/LICENSE?raw=true).
+
+The repository code is open-sourced software licensed under the [MIT license](https://github.com/SlimDogs/vscode-html-to-css/blob/master/LICENSE?raw=true).
