@@ -111,6 +111,11 @@
 			"pre-commit": "npm run lint"
 		}
 	},
+	"greenkeeper": {
+		"ignore": [
+		  "@types/node"
+		]
+	},
 	"release": {
 		"verifyConditions": [
 			"semantic-release-vsce",
