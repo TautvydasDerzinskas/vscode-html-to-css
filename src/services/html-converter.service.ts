@@ -54,10 +54,16 @@ class HtmlToScss {
         }
 
         let styleSelectors = '';
-        if (isCss) {
-            styleSelectors = this.convertToCss(reducedTiers);
-        } else {
-            styleSelectors = this.convertToScss(reducedTiers);
+        switch (fileExtension) {
+            case 'css':
+                styleSelectors = this.convertToCss(reducedTiers);
+                break;
+            case 'scss':
+            case 'less':
+            default:
+                styleSelectors = this.convertToScss(reducedTiers);
+                break;
+
         }
         return prefix + styleSelectors;
     }
@@ -76,9 +82,10 @@ class HtmlToScss {
         return newDom;
     }
 
-    private getClickSelectors(domElement: IDomObject, spacing = '  ') {
+    private getClickSelectors(domElement: IDomObject, isCss: boolean, spacing = '', prefix = '') {
         if (domElement.metaTag && (domElement.metaTag === 'a' || domElement.metaTag === 'button')) {
-            return `${spacing}&:hover {\n\n${spacing}}\n${spacing}&:active {\n\n${spacing}}\n${spacing}&:focus {\n\n${spacing}}`;
+            const selectorPrefix = isCss ? prefix : '&';
+            return `${spacing}${selectorPrefix}:hover {}\n${spacing}${selectorPrefix}:active {}\n${spacing}${selectorPrefix}:focus {}\n`;
         } else {
             return '';
         }
@@ -307,7 +314,9 @@ class HtmlToScss {
             const ids = (el.ids.length) ? '#' + el.ids.join('#') : '';
             const tag = el.tag;
             if (classes !== '' || ids !== '' || tag !== '') {
-                sass += `\n${spacing}${el.tag}${ids}${classes} {${this.convertToScss(el.children, nest + 1)}\n${this.getClickSelectors(el, spacing + singleSpace)}\n${spacing}}`;
+                const childSelectors = this.convertToScss(el.children, nest + 1);
+                const clickSelectors = this.getClickSelectors(el, false, spacing + singleSpace);
+                sass += `\n${spacing}${el.tag}${ids}${classes} {${childSelectors}\n${clickSelectors}${spacing}}`;
             } else {
                 sass += `${this.convertToScss(el.children, nest)}`;
             }
@@ -316,16 +325,19 @@ class HtmlToScss {
         return sass;
     }
 
-    private convertToCss(DOMObject: IDomObject[]) {
+    private convertToCss(DOMObject: IDomObject[], prefix = '') {
         let css = '';
         DOMObject.forEach(el => {
             const classes = this.getDottedClasses(el);
             const ids = (el.ids.length) ? '#' + el.ids.join('#') : '';
             const tag = el.tag;
             if (classes !== '' || ids !== '' || tag !== '') {
-                css += `${el.tag}${ids}${classes} {\n${this.getClickSelectors(el)}\n}\n${this.convertToCss(el.children)}`;
+                const newPrefix = `${el.tag}${ids}${classes}`;
+                const clickSelectors = this.getClickSelectors(el, true, '', prefix + newPrefix);
+                const nextSelectors = this.convertToCss(el.children, prefix + newPrefix + ' ');
+                css += `${prefix}${newPrefix} {}\n${clickSelectors}${nextSelectors}`;
             } else {
-                css += `${this.convertToCss(el.children)}\n`;
+                css += `${this.convertToCss(el.children, prefix)}\n`;
             }
 
         });
