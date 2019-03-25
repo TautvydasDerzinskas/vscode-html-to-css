@@ -1,3 +1,10 @@
+## [1.1.7](https://github.com/SlimDogs/vscode-html-to-css/compare/v1.1.6...v1.1.7) (2019-03-25)
+
+
+### Bug Fixes
+
+* **css:** make css nest & fix clickable elements psiaudo selectors ([453ca74](https://github.com/SlimDogs/vscode-html-to-css/commit/453ca74))
+
 # 1.0.0 (2019-03-23)
 
 
