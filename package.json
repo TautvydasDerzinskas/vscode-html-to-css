@@ -96,7 +96,7 @@
 		"vscode": "^1.1.30"
 	},
 	"dependencies": {
-		"jsdom": "^14.0.0"
+		"jsdom": "^15.0.0"
 	},
 	"config": {
 		"commitizen": {
