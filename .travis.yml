@@ -10,6 +10,7 @@ install:
 
 script:
   - npm run lint
+  - npm run test
 
 after_success:
 - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" && npm run semantic-release

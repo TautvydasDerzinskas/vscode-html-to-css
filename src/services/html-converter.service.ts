@@ -1,27 +1,13 @@
-import { workspace } from 'vscode';
 import { JSDOM } from 'jsdom';
 import utilityService from './utility.service';
 import IOptions from '../interfaces/options.interface';
 import IDomObject from '../interfaces/dom-object.interface';
 
 class HtmlToScss {
-    private options: IOptions = {
-        reduceSiblings: true,
-        combineParents: true,
-        hideTags: true,
-        convertBEM: true,
-        preappendHtml: false,
-    };
+    constructor(private options: IOptions) {}
 
-    constructor() {
-        this.updateConfiguration();
-    }
-
-    public updateConfiguration() {
-        const configuration = workspace.getConfiguration('htmlToCss');
-        this.options.hideTags = configuration.get('hideTags', true);
-        this.options.convertBEM = configuration.get('convertBEM', true);
-        this.options.preappendHtml = configuration.get('preappendHtml', false);
+    public updateConfiguration(options: IOptions) {
+        this.options = options;
     }
 
     public getFileExtension(filePath: string) {
@@ -63,7 +49,6 @@ class HtmlToScss {
             default:
                 styleSelectors = this.convertToScss(reducedTiers);
                 break;
-
         }
         return prefix + styleSelectors;
     }
@@ -161,7 +146,6 @@ class HtmlToScss {
             el.children = this.reduceTiers(el.children, maxDepth, currentDepth + 1);
         });
 
-
         return newDom;
     }
 
@@ -189,7 +173,7 @@ class HtmlToScss {
                             tag: '',
                             ids: [],
                             classes: [modiferClass],
-                            children: []
+                            children: [],
                         });
                         isKeptClass = false;
                     }
@@ -197,7 +181,6 @@ class HtmlToScss {
                 return isKeptClass;
             });
             el.children = newChildren.concat(el.children);
-
 
             if (parentClasses !== null && typeof parentClasses !== 'undefined') {
                 // if class bemchild, modify, push others to newChildren
@@ -236,7 +219,6 @@ class HtmlToScss {
         });
         return newDom;
     }
-
 
     private convertBEMRecursive(parent: IDomObject) {
         parent.children = parent.children.map((el) => this.convertBEMRecursive(el));
@@ -296,8 +278,8 @@ class HtmlToScss {
                     tag: el.nodeName.toLowerCase(),
                     metaTag: el.nodeName.toLowerCase(),
                     classes: utilityService.toArray(el.classList),
-                    ids: ids,
-                    children: this.extractHtml(el.children)
+                    ids,
+                    children: this.extractHtml(el.children),
                 });
             }
         }
@@ -357,4 +339,4 @@ class HtmlToScss {
     }
 }
 
-export default new HtmlToScss();
+export default HtmlToScss;

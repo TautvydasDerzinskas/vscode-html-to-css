@@ -5,10 +5,25 @@ import {
   TextEditor,
   TextEditorEdit,
   Selection,
-  workspace
+  workspace,
 } from 'vscode';
-import htmlConverterService from './services/html-converter.service';
+import HtmlConverterService from './services/html-converter.service';
+import IOptions from './interfaces/options.interface';
 import * as manifest from '../package.json';
+
+const getExtensionConfigurationOptions = (): IOptions => {
+  const configuration = workspace.getConfiguration('htmlToCss');
+
+  return {
+    reduceSiblings: true,
+    combineParents: true,
+    hideTags: configuration.get('hideTags', true),
+    convertBEM: configuration.get('convertBEM', true),
+    preappendHtml: configuration.get('preappendHtml', false),
+  };
+};
+
+const htmlConverterService = new HtmlConverterService(getExtensionConfigurationOptions());
 
 export function activate(context: ExtensionContext) {
   const commandDisposable = commands.registerCommand('htmlToCss.paste', () => {
@@ -31,7 +46,10 @@ export function activate(context: ExtensionContext) {
             window.showInformationMessage('HTML successfuly converted');
           });
         } else {
-          window.showErrorMessage('Your clipboard value does not contain valid html structure');
+          window.showErrorMessage(
+            'Your clipboard value is not valid HTML code.' +
+            'Please make sure you copied full HTML structure, including opening and closing tags.',
+          );
         }
       });
     }
@@ -39,13 +57,12 @@ export function activate(context: ExtensionContext) {
 
   const configurationListenerDisposable = workspace.onDidChangeConfiguration(e => {
     if (e.affectsConfiguration('htmlToCss')) {
-      htmlConverterService.updateConfiguration();
+      htmlConverterService.updateConfiguration(getExtensionConfigurationOptions());
     }
   });
 
   context.subscriptions.push(commandDisposable, configurationListenerDisposable);
 
-  // tslint:disable-next-line: no-console
   console.info(
     `[vscode-html-to-css] v${manifest.version} activated!`,
   );
