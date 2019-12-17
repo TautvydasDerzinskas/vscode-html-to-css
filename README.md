@@ -23,7 +23,7 @@
 - [Changelog](CHANGELOG.md)
 
 ## About
-Visual Studio Code extension enables developers to convert Html code structure to Css/Less/Sass selectors!
+Visual Studio Code extension enables developers to convert HTML code to CSS / LESS / SCSS style syntax!
 
 Please see preview & usage for more information.
 
@@ -33,14 +33,19 @@ Please see preview & usage for more information.
 ## Usage
 
 Default usage:
+1. Copy valid HTML code (including opening & closing tags)
+2. Activate the window where you want to paste the converted style selectors & click right mouse button to get to the its context menus then select highlighted option:
 
-1. Copy valid Html code (including closing tags)
+<img width="800px" src="https://raw.githubusercontent.com/SlimDogs/vscode-html-to-css/master/images/html2css_menu.png" alt="Context menu" title="Context menu" />
+
+Keybind usage:
+1. Copy valid HTML code (including opening & closing tags)
 2. Paste the code using key combination `CMD/CTRL+ALT+V`
-3. It will paste CSS selectors to *.css files and Sass/Less selectors to all other files.
+3. It will paste CSS selectors to *.css files and SCSS / LESS selectors to all other files.
 
 Alternative usage:
 1. Open command pallete by clicking `CMD/CTRL+SHIFT+P`
-2. Type `Convert Html to Css` and select suggested option
+2. Type `Paste HTML converted to CSS / LESS / SCSS` and select suggested option
 
 ## Installation
 
@@ -54,7 +59,7 @@ Via Quick Open:
 Via the Extensions tab:
 
 1. Click the extensions tab or press `CMD/CTRL+SHIFT+X`
-2. Search for `html for css/less/sass`
+2. Search for `html for css/less/scss`
 3. Click the `Install` button, then the `Enable` button
 
 Via the command line:
@@ -73,7 +78,7 @@ Extension provides these [User and Workspace settings](https://code.visualstudio
 
 This project uses big portion of logic written by [Harry Horton](https://github.com/Johnhhorton).
 
-Please check out his awesome [sassifyhtml project](https://github.com/Johnhhorton/sassifyhtml)!
+Please check out his awesome [scssifyhtml project](https://github.com/Johnhhorton/scssifyhtml)!
 
 ## License
 

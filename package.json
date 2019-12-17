@@ -1,7 +1,7 @@
 {
 	"name": "vscode-html-to-css",
-	"displayName": "HTML to CSS / LESS / SASS",
-	"description": "Copy HTML code and paste it as CSS / LESS / SASS selectors code",
+	"displayName": "HTML to CSS / LESS / SCSS",
+	"description": "Copy HTML code and paste it as CSS / LESS / SCSS selectors code",
 	"version": "1.1.6",
 	"publisher": "tautvydasderzinskas",
 	"icon": "images/html2css_transparent.png",
@@ -14,6 +14,15 @@
 		"color": "#313944",
 		"theme": "dark"
 	},
+    "keywords": [
+        "html",
+        "css",
+		"less",
+		"scss",
+		"html to css",
+		"html to less",
+		"html to scss"
+    ],
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
@@ -30,7 +39,6 @@
 		"@types/jest": "24.0.23",
 		"@types/jsdom": "12.2.4",
 		"@types/node": "12.12.17",
-		"@types/vscode": "1.41.0",
 		"babel-jest": "24.9.0",
 		"commitizen": "4.0.3",
 		"cz-customizable": "6.2.0",
@@ -56,7 +64,7 @@
 	},
 	"license": "MIT",
 	"engines": {
-		"vscode": "1.25.0"
+		"vscode": "^1.25.0"
 	},
 	"categories": [
 		"Other",
@@ -70,7 +78,7 @@
 		"commands": [
 			{
 				"command": "htmlToCss.paste",
-				"title": "Convert HTML to CSS / LESS / SASS"
+				"title": "Paste HTML converted to CSS / LESS / SCSS"
 			}
 		],
 		"keybindings": [
@@ -81,9 +89,16 @@
 				"when": "editorTextFocus && !editorReadOnly"
 			}
 		],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "htmlToCss.paste"
+                }
+            ]
+        },
 		"configuration": {
 			"type": "object",
-			"title": "HTML to CSS / LESS / SASS configuration",
+			"title": "HTML to CSS / LESS / SCSS configuration",
 			"properties": {
 				"htmlToCss.hideTags": {
 					"type": "boolean",
