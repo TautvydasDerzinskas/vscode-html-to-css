@@ -139,4 +139,13 @@ describe('Core tests', () => {
             });
         });
     });
+
+    describe('Edge case testing', () => {
+        it('should not have class without children repeated on BEM conversion', () => {
+            const newOptions = Object.assign({}, configurationMock, { convertBEM: true });
+            service.updateConfiguration(newOptions);
+            const result = service.convert(validHTMLCode, 'less');
+            expect(result.split('.organism__atom').length).toBe(2);
+        });
+    });
 });

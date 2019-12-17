@@ -291,18 +291,23 @@ class HtmlToScss {
         let sass = '';
         const singleSpace = '  ';
         const spacing = singleSpace.repeat(nest);
+        const nestClasses: string[] = [];
         DOMObject.forEach(el => {
             const classes = this.getDottedClasses(el);
             const ids = (el.ids.length) ? '#' + el.ids.join('#') : '';
             const tag = el.tag;
-            if (classes !== '' || ids !== '' || tag !== '') {
-                const childSelectors = this.convertToScss(el.children, nest + 1);
-                const clickSelectors = this.getClickSelectors(el, false, spacing + singleSpace);
-                sass += `\n${spacing}${el.tag}${ids}${classes} {${childSelectors}\n${clickSelectors}${spacing}}`;
-            } else {
-                sass += `${this.convertToScss(el.children, nest)}`;
-            }
 
+            const wasClassAddedBefore = nestClasses.indexOf(classes) > -1 && el.children.length === 0;
+            if (!wasClassAddedBefore) {
+                nestClasses.push(classes);
+                if (classes !== '' || ids !== '' || tag !== '') {
+                    const childSelectors = this.convertToScss(el.children, nest + 1);
+                    const clickSelectors = this.getClickSelectors(el, false, spacing + singleSpace);
+                    sass += `\n${spacing}${el.tag}${ids}${classes} {${childSelectors}\n${clickSelectors}${spacing}}`;
+                } else {
+                    sass += `${this.convertToScss(el.children, nest)}`;
+                }
+            }
         });
         return sass;
     }
