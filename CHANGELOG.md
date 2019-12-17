@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/SlimDogs/vscode-html-to-css/compare/v1.1.7...v1.2.0) (2019-12-17)
+
+
+### Bug Fixes
+
+* **#13:** resolve class duplication issue ([68ee4ba](https://github.com/SlimDogs/vscode-html-to-css/commit/68ee4ba53e15e9929b6edf1adc754fadd5893e87)), closes [#13](https://github.com/SlimDogs/vscode-html-to-css/issues/13)
+* **package:** update jsdom to version 15.0.0 ([b627731](https://github.com/SlimDogs/vscode-html-to-css/commit/b62773138ac5a63c4ba5e32c91eab08321d5d5ab))
+
+
+### Features
+
+* **pasting:** add editor context menu option to paste converted results ([5574014](https://github.com/SlimDogs/vscode-html-to-css/commit/5574014c91f815bbe658ad96bb2556136870ba0b))
+
 ## [1.1.7](https://github.com/SlimDogs/vscode-html-to-css/compare/v1.1.6...v1.1.7) (2019-03-25)
 
 

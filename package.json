@@ -14,15 +14,15 @@
 		"color": "#313944",
 		"theme": "dark"
 	},
-    "keywords": [
-        "html",
-        "css",
+	"keywords": [
+		"html",
+		"css",
 		"less",
 		"scss",
 		"html to css",
 		"html to less",
 		"html to scss"
-    ],
+	],
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
@@ -89,13 +89,13 @@
 				"when": "editorTextFocus && !editorReadOnly"
 			}
 		],
-        "menus": {
-            "editor/context": [
-                {
-                    "command": "htmlToCss.paste"
-                }
-            ]
-        },
+		"menus": {
+			"editor/context": [
+				{
+					"command": "htmlToCss.paste"
+				}
+			]
+		},
 		"configuration": {
 			"type": "object",
 			"title": "HTML to CSS / LESS / SCSS configuration",
