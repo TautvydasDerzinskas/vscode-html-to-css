@@ -2,7 +2,7 @@
 	"name": "vscode-html-to-css",
 	"displayName": "HTML to CSS / LESS / SCSS",
 	"description": "Copy HTML code and paste it as CSS / LESS / SCSS selectors code",
-	"version": "1.1.6",
+	"version": "1.2.0",
 	"publisher": "tautvydasderzinskas",
 	"icon": "images/html2css_transparent.png",
 	"author": {
