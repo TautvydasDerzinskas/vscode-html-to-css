@@ -1,0 +1,36 @@
+name: Test & release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [8.x]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install dependencies
+      run: |
+        npm install -g vsce
+        npm install -g typescript
+        npm i
+    - name: Run linting & testing
+      run: |
+        npm run lint
+        npm run test
+    - name: Perform the release
+      run: npm run semantic-release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}

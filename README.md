@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="#" target="_blank"><img src="https://travis-ci.com/TautvydasDerzinskas/vscode-html-to-css.svg?branch=master" alt="Latest CI build status" title="Latest CI build status"></a>
+  <a href="#" target="_blank"><img src="https://action-badges.now.sh/TautvydasDerzinskas/vscode-html-to-css?action=test" alt="Latest CI build status" title="Latest CI build status"></a>
   <a href="https://marketplace.visualstudio.com/items?itemName=tautvydasderzinskas.vscode-html-to-css" target="_blank"><img src="https://img.shields.io/visual-studio-marketplace/d/tautvydasderzinskas.vscode-html-to-css.svg" alt="Visual Studio Marketplace" title="Visual Studio Marketplace"></a>
   <a href="https://greenkeeper.io" target="_blank"><img src="https://badges.greenkeeper.io/TautvydasDerzinskas/vscode-html-to-css.svg" alt="Greenkeeper" title="Greenkeeper"></a>
   <a href="http://commitizen.github.io/cz-cli" target="_blank"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" title="Commitizen friendly"></a>
