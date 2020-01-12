@@ -44,7 +44,7 @@
 		"cz-customizable": "6.2.0",
 		"husky": "4.0.2",
 		"jest": "24.9.0",
-		"semantic-release": "15.14.0",
+		"semantic-release": "16.0.0",
 		"semantic-release-vsce": "2.2.8",
 		"ts-jest": "^24.2.0",
 		"tslint": "5.20.1",
