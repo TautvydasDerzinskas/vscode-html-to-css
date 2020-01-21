@@ -42,7 +42,7 @@
 		"babel-jest": "24.9.0",
 		"commitizen": "4.0.3",
 		"cz-customizable": "6.2.0",
-		"husky": "4.0.9",
+		"husky": "4.1.0",
 		"jest": "24.9.0",
 		"semantic-release": "16.0.0",
 		"semantic-release-vsce": "2.2.8",
