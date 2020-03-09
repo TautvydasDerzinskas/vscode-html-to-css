@@ -52,7 +52,7 @@
 		"vscode": "1.1.36"
 	},
 	"dependencies": {
-		"jsdom": "15.2.1"
+		"jsdom": "16.2.1"
 	},
 	"repository": {
 		"type": "git",
