@@ -45,7 +45,7 @@
 		"husky": "4.1.0",
 		"jest": "24.9.0",
 		"semantic-release": "16.0.4",
-		"semantic-release-vsce": "2.2.8",
+		"semantic-release-vsce": "3.0.0",
 		"ts-jest": "^25.1.0",
 		"tslint": "5.20.1",
 		"typescript": "3.7.3",
