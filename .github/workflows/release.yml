@@ -1,36 +1,46 @@
-name: Test & release
+name: Release
 
 on:
   push:
-    branches:
-      - master
+    branches: [ main ]
 
 jobs:
   release:
-    name: Release
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [8.x]
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+    - uses: actions/checkout@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
     - name: Install dependencies
-      run: |
-        npm install -g vsce
-        npm install -g typescript
-        npm i
-    - name: Run linting & testing
-      run: |
-        npm run lint
-        npm run test
-    - name: Perform the release
-      run: npm run semantic-release
+      run: npm ci
+      
+    - name: Build
+      run: npm run compile
+      
+    - name: Create Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+      run: npx semantic-release
+      
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+      
+    - name: Package extension
+      run: vsce package
+      
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./vscode-html-to-css.vsix
+        asset_name: vscode-html-to-css.vsix
+        asset_content_type: application/octet-stream

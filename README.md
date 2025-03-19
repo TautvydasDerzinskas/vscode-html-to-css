@@ -1,85 +1,105 @@
-<p align="center">
-  <a href="https://github.com/TautvydasDerzinskas/vscode-html-to-css"><img src="https://raw.githubusercontent.com/TautvydasDerzinskas/vscode-html-to-css/master/images/html2css_dark.png" alt="Visual Studio Code extension: Html to css" title="Visual Studio Code extension: Html to css" /></a>
-</p>
+# HTML to CSS / LESS / SCSS Converter
 
-<p align="center">
-  <a href="#" target="_blank"><img src="https://action-badges.now.sh/TautvydasDerzinskas/vscode-html-to-css?action=test" alt="Latest CI build status" title="Latest CI build status"></a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=tautvydasderzinskas.vscode-html-to-css" target="_blank"><img src="https://img.shields.io/visual-studio-marketplace/d/tautvydasderzinskas.vscode-html-to-css.svg" alt="Visual Studio Marketplace" title="Visual Studio Marketplace"></a>
-  <a href="https://greenkeeper.io" target="_blank"><img src="https://badges.greenkeeper.io/TautvydasDerzinskas/vscode-html-to-css.svg" alt="Greenkeeper" title="Greenkeeper"></a>
-  <a href="http://commitizen.github.io/cz-cli" target="_blank"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" title="Commitizen friendly"></a>
-  <a href="https://github.com/semantic-release/semantic-release" target="_blank"><img src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="Semantic release" title="Semantic release"></a>
-  <a href="https://opensource.org/licenses/MIT" target="_blank"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" title="MIT License"></a>
-  <a href="https://github.com/igrigorik/ga-beacon" target="_blank"><img src="https://ga-beacon.appspot.com/UA-131052445-2/TautvydasDerzinskas/vscode-html-to-css" alt="Analytics" title="Analytics"></a>
-</p>
+A Visual Studio Code extension that converts HTML structure to CSS, LESS, or SCSS selectors. This extension helps you quickly generate CSS selectors from HTML markup, with support for BEM methodology and various optimization options.
 
-## Table of content
-- [About](#about)
-- [Preview](#preview)
-- [Usage](#usage)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Credits](#credits)
-- [License](#license)
-- [Changelog](CHANGELOG.md)
+## Features
 
-## About
-Visual Studio Code extension enables developers to convert HTML code to CSS / LESS / SCSS style syntax!
-
-Please see preview & usage for more information.
-
-## Preview
-<a href="images/html2css_preview.gif" target="_blank"><img width="800px" src="https://raw.githubusercontent.com/TautvydasDerzinskas/vscode-html-to-css/master/images/html2css_preview.gif" alt="Preview" title="Preview" /></a>
-
-## Usage
-
-Default usage:
-1. Copy valid HTML code (including opening & closing tags)
-2. Activate the window where you want to paste the converted style selectors & click right mouse button to get to the its context menus then select highlighted option:
-
-<img width="300px" src="https://raw.githubusercontent.com/TautvydasDerzinskas/vscode-html-to-css/master/images/html2css_menu.png" alt="Context menu" title="Context menu" />
-
-Keybind usage:
-1. Copy valid HTML code (including opening & closing tags)
-2. Paste the code using key combination `CMD/CTRL+ALT+V`
-3. It will paste CSS selectors to *.css files and SCSS / LESS selectors to all other files.
-
-Alternative usage:
-1. Open command pallete by clicking `CMD/CTRL+SHIFT+P`
-2. Type `Paste HTML converted to CSS / LESS / SCSS` and select suggested option
+- Convert HTML structure to CSS/LESS/SCSS selectors
+- Support for BEM methodology
+- Smart tag hiding when classes or IDs are present
+- Sibling reduction for cleaner output
+- Parent combination for better organization
+- Support for clickable elements (hover, active, focus states)
+- Configuration options for customization
+- Support for multiple file extensions (.css, .less, .scss, .sass)
 
 ## Installation
 
-Via Quick Open:
+1. Open Visual Studio Code
+2. Go to the Extensions view (Ctrl+Shift+X or Cmd+Shift+X)
+3. Search for "HTML to CSS"
+4. Click Install
 
-1. [Download](https://code.visualstudio.com/download), install and open VS Code
-2. Press `CMD/CTRL+P` to open the Quick Open dialog
-3. Type `ext install tautvydasderzinskas.vscode-html-to-css`
-4. Click the *Install* button, then the *Enable* button
+## Usage
 
-Via the Extensions tab:
-
-1. Click the extensions tab or press `CMD/CTRL+SHIFT+X`
-2. Search for `html for css/less/scss`
-3. Click the `Install` button, then the `Enable` button
-
-Via the command line:
-
-1. Open a command-line prompt
-2. Run `code --install-extension TautvydasDerzinskas.vscode-html-to-css`
+1. Copy your HTML code to the clipboard
+2. Open a CSS/LESS/SCSS file in VS Code
+3. Place your cursor where you want to insert the converted code
+4. Press `Ctrl+Alt+V` (Windows/Linux) or `Cmd+Alt+V` (Mac)
+5. The converted CSS/LESS/SCSS code will be inserted at the cursor position
 
 ## Configuration
 
-Extension provides these [User and Workspace settings](https://code.visualstudio.com/docs/getstarted/settings):
-- `htmlToCss.hideTags` - hide tag selector if element has class or id (default: ***true***)
-- `htmlToCss.convertBEM` - recognize BEM classes and split them accordingly (default: ***true***)
-- `htmlToCss.preappendHtml` - pre-append comment containing transformed html structure (default: ***false***)
+The extension can be configured through VS Code settings:
 
-## Credits
+```json
+{
+    "htmlToCss.hideTags": true,        // Hide tag selectors if element has class or id
+    "htmlToCss.convertBEM": true,      // Convert BEM classes to nested selectors
+    "htmlToCss.preappendHtml": false,  // Add original HTML as a comment
+    "htmlToCss.reduceSiblings": true,  // Combine identical sibling elements
+    "htmlToCss.combineParents": true   // Combine identical parent elements
+}
+```
 
-This project uses big portion of logic written by [Harry Horton](https://github.com/Johnhhorton).
+## Examples
 
-Please check out his awesome [scssifyhtml project](https://github.com/Johnhhorton/scssifyhtml)!
+### Input HTML
+```html
+<div class="card">
+    <div class="card__header">
+        <h2 class="card__title">Title</h2>
+    </div>
+    <div class="card__body">
+        <p class="card__text">Content</p>
+    </div>
+</div>
+```
+
+### Output CSS
+```css
+.card {}
+.card__header {}
+.card__title {}
+.card__body {}
+.card__text {}
+```
+
+### Output SCSS/LESS
+```scss
+.card {
+    &__header {}
+    &__title {}
+    &__body {}
+    &__text {}
+}
+```
+
+## Features in Detail
+
+### BEM Support
+When using SCSS or LESS, the extension automatically converts BEM classes to nested selectors using the `&` parent selector.
+
+### Clickable Elements
+The extension automatically adds hover, active, and focus states for clickable elements (a, button).
+
+### Smart Tag Hiding
+When an element has classes or IDs, the tag selector is hidden to reduce specificity.
+
+### Sibling Reduction
+Identical sibling elements are combined to reduce code duplication.
+
+### Parent Combination
+Similar parent elements are combined to improve code organization.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-The repository code is open-sourced software licensed under the [MIT license](https://github.com/TautvydasDerzinskas/vscode-html-to-css/blob/master/LICENSE?raw=true).
+This extension is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+If you encounter any issues or have suggestions, please file them in the [GitHub issues](https://github.com/SlimDogs/vscode-html-to-css/issues).

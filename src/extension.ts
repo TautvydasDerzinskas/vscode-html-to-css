@@ -1,71 +1,77 @@
-import {
-  window,
-  commands,
-  ExtensionContext,
-  TextEditor,
-  TextEditorEdit,
-  Selection,
-  workspace,
-} from 'vscode';
+import * as vscode from 'vscode';
 import HtmlConverterService from './services/html-converter.service';
 import IOptions from './interfaces/options.interface';
 import * as manifest from '../package.json';
 
-const getExtensionConfigurationOptions = (): IOptions => {
-  const configuration = workspace.getConfiguration('htmlToCss');
+export function activate(context: vscode.ExtensionContext) {
+    const configuration = vscode.workspace.getConfiguration('htmlToCss');
+    const options: IOptions = {
+        reduceSiblings: configuration.get('reduceSiblings', true),
+        combineParents: configuration.get('combineParents', true),
+        hideTags: configuration.get('hideTags', true),
+        convertBEM: configuration.get('convertBEM', true),
+        preappendHtml: configuration.get('preappendHtml', false),
+    };
 
-  return {
-    reduceSiblings: true,
-    combineParents: true,
-    hideTags: configuration.get('hideTags', true),
-    convertBEM: configuration.get('convertBEM', true),
-    preappendHtml: configuration.get('preappendHtml', false),
-  };
-};
+    const htmlConverter = new HtmlConverterService(options);
 
-const htmlConverterService = new HtmlConverterService(getExtensionConfigurationOptions());
+    const disposable = vscode.commands.registerCommand('htmlToCss.paste', async () => {
+        try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                throw new Error('No active editor found');
+            }
 
-export function activate(context: ExtensionContext) {
-  const commandDisposable = commands.registerCommand('htmlToCss.paste', () => {
-    const editor = window.activeTextEditor;
+            const document = editor.document;
+            const fileExtension = document.fileName.split('.').pop()?.toLowerCase();
+            
+            if (!fileExtension) {
+                throw new Error('File has no extension');
+            }
 
-    if (editor) {
-      const start = editor.selection.start;
-      const filePath = (editor as TextEditor).document.fileName.toLowerCase();
-      const fileExtension = htmlConverterService.getFileExtension(filePath);
+            const clipboardText = await vscode.env.clipboard.readText();
+            if (!clipboardText) {
+                throw new Error('Clipboard is empty');
+            }
 
-      commands.executeCommand('editor.action.clipboardPasteAction').then(() => {
-        const end = editor.selection.end;
-        const selectionToIndent = new Selection(start.line, start.character, end.line, end.character);
-        const text = editor.document.getText(selectionToIndent);
+            if (!htmlConverter.isStringHtml(clipboardText)) {
+                throw new Error('Clipboard content is not valid HTML');
+            }
 
-        if (htmlConverterService.isStringHtml(text)) {
-          editor.edit((editBuilder: TextEditorEdit) => {
-            editBuilder.replace(selectionToIndent, htmlConverterService.convert(text, fileExtension));
-
-            window.showInformationMessage('HTML successfuly converted');
-          });
-        } else {
-          window.showErrorMessage(
-            'Your clipboard value is not valid HTML code.' +
-            'Please make sure you copied full HTML structure, including opening and closing tags.',
-          );
+            const convertedCode = htmlConverter.convert(clipboardText, fileExtension);
+            
+            editor.edit(editBuilder => {
+                const position = editor.selection.active;
+                editBuilder.insert(position, convertedCode);
+            });
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            vscode.window.showErrorMessage(`HTML to CSS conversion failed: ${errorMessage}`);
         }
-      });
-    }
-  });
+    });
 
-  const configurationListenerDisposable = workspace.onDidChangeConfiguration(e => {
-    if (e.affectsConfiguration('htmlToCss')) {
-      htmlConverterService.updateConfiguration(getExtensionConfigurationOptions());
-    }
-  });
+    context.subscriptions.push(disposable);
 
-  context.subscriptions.push(commandDisposable, configurationListenerDisposable);
+    // Listen for configuration changes
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('htmlToCss')) {
+                const newConfiguration = vscode.workspace.getConfiguration('htmlToCss');
+                const newOptions: IOptions = {
+                    reduceSiblings: newConfiguration.get('reduceSiblings', true),
+                    combineParents: newConfiguration.get('combineParents', true),
+                    hideTags: newConfiguration.get('hideTags', true),
+                    convertBEM: newConfiguration.get('convertBEM', true),
+                    preappendHtml: newConfiguration.get('preappendHtml', false),
+                };
+                htmlConverter.updateConfiguration(newOptions);
+            }
+        })
+    );
 
-  console.info(
-    `[vscode-html-to-css] v${manifest.version} activated!`,
-  );
+    console.info(
+        `[vscode-html-to-css] v${manifest.version} activated!`,
+    );
 }
 
-export function deactivate() { }
+export function deactivate() {}

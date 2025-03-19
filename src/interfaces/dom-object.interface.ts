@@ -4,4 +4,4 @@ export default interface IDomObject {
     classes: string[];
     ids: string[];
     children: IDomObject[];
-}
+  }
