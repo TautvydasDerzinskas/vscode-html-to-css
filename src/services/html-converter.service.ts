@@ -1,238 +1,297 @@
-import { JSDOM } from 'jsdom';
-import utilityService from './utility.service';
+import { HTMLElement, parse } from 'node-html-parser';
 import IOptions from '../interfaces/options.interface';
 import IDomObject from '../interfaces/dom-object.interface';
 
+/** Tags that get :hover / :active / :focus stubs generated for them. */
+const CLICKABLE_TAGS = new Set(['a', 'button']);
+
+/** Tags that never render, so they never produce a selector. */
+const NON_RENDERED_TAGS = new Set([
+  'base',
+  'head',
+  'link',
+  'meta',
+  'noscript',
+  'script',
+  'style',
+  'template',
+  'title',
+]);
+
+const STATE_SELECTORS = [':hover', ':active', ':focus'];
+
+/** Matches an opening, closing or self-closing tag. */
+const HTML_PATTERN = /<\s*\/?\s*[a-zA-Z][^>]*>/;
+
+const INDENT = '  ';
+
+const DEFAULT_OPTIONS: IOptions = {
+  reduceSiblings: true,
+  combineParents: true,
+  hideTags: true,
+  convertBEM: true,
+  preappendHtml: false,
+};
+
 /**
- * Converts HTML to SCSS/CSS with configurable options
+ * Converts an HTML fragment into CSS / LESS / SCSS selector scaffolding.
  */
-class HtmlToScss {
-  private static readonly CLICKABLE_TAGS = new Set(['a', 'button']);
-  private static readonly MAX_DEPTH = 4;
-  private static readonly HTML_PATTERNS = [
-    /<\s*[a-zA-Z][^>]*>/,         // Opening tag
-    /<\s*\/\s*[a-zA-Z][^>]*>/,    // Closing tag
-    /<\s*[a-zA-Z][^>]*\s*\/>/,    // Self-closing tag
-  ];
+class HtmlConverterService {
+  private options: IOptions;
 
-  constructor(private options: IOptions) {
-    this.validateOptions(options);
+  constructor(options?: Partial<IOptions>) {
+    this.options = this.normalizeOptions(options);
   }
 
   /**
-   * Updates configuration options with validation
+   * Replaces the current options. Missing or non-boolean values fall back to defaults.
    */
-  public updateConfiguration(options: IOptions): void {
-    this.validateOptions(options);
-    this.options = { ...options };
+  public updateConfiguration(options?: Partial<IOptions>): void {
+    this.options = this.normalizeOptions(options);
   }
 
   /**
-   * Extracts file extension from a file path
+   * Returns the lower-cased extension of a file path, or '' when there is none.
    */
   public getFileExtension(filePath: string): string {
-    return filePath.split('.').pop()?.toLowerCase() || '';
+    return filePath.split('.').pop()?.toLowerCase() ?? '';
   }
 
   /**
-   * Checks if a string contains valid HTML-like content
+   * Cheap check for whether a string looks like an HTML fragment.
    */
   public isStringHtml(text: string): boolean {
-    if (!text?.trim()) return false;
-
-    const cleanText = text.replace(/\s+/g, ' ').trim();
-    return HtmlToScss.HTML_PATTERNS.some(pattern => pattern.test(cleanText));
+    return !!text?.trim() && HTML_PATTERN.test(text);
   }
 
   /**
-   * Converts HTML string to SCSS/CSS based on file extension
+   * Converts an HTML fragment into selector scaffolding. `css` gets flat descendant
+   * selectors, every other extension gets nested (LESS/SCSS) output.
+   *
+   * Returns an empty string when the fragment holds no renderable elements.
    */
-  public convert(dom: string, fileExtension: string): string {
-    try {
-      const isCss = fileExtension === 'css';
-      let processedDom = this.extractHtml(dom);
+  public convert(html: string, fileExtension: string): string {
+    const isCss = fileExtension.toLowerCase() === 'css';
 
-      processedDom = this.options.hideTags ? this.removeTags(processedDom) : processedDom;
-      processedDom = this.options.reduceSiblings ? this.reduceSiblings(processedDom) : processedDom;
-      processedDom = this.options.combineParents ? this.combineSimilarParents(processedDom) : processedDom;
-      processedDom = this.options.convertBEM && !isCss ? this.convertBEM(processedDom) : processedDom;
-      processedDom = this.reduceTiers(processedDom, HtmlToScss.MAX_DEPTH);
-
-      const prefix = this.options.preappendHtml
-        ? `/*\n${dom.trim().split('\n').map(line => ` * ${line}`).join('\n')}\n */\n`
-        : '';
-
-      return prefix + (isCss ? this.convertToCss(processedDom) : this.convertToScss(processedDom));
-    } catch (error) {
-      console.error('Error converting HTML:', error);
-      throw new Error('Failed to convert HTML to CSS/SCSS');
+    let dom = this.parseHtml(html);
+    if (this.options.hideTags) {
+      dom = this.removeTags(dom);
     }
+    if (this.options.convertBEM && !isCss) {
+      dom = this.convertBEM(dom);
+    }
+    dom = this.mergeSiblings(dom);
+
+    const rules = isCss ? this.renderCss(dom, '') : this.renderScss(dom, 0);
+    if (!rules.length) {
+      return '';
+    }
+
+    const body = `${rules.join('\n')}\n`;
+    return this.options.preappendHtml ? `${this.buildHtmlComment(html)}${body}` : body;
   }
 
-  private validateOptions(options: IOptions): void {
-    if (!options || typeof options !== 'object') {
-      throw new Error('Options must be a valid object');
-    }
-    const requiredOptions: (keyof IOptions)[] = ['reduceSiblings', 'combineParents', 'hideTags', 'convertBEM', 'preappendHtml'];
-    for (const option of requiredOptions) {
-      if (typeof options[option] !== 'boolean') {
-        throw new Error(`Option ${option} must be a boolean`);
+  private normalizeOptions(options?: Partial<IOptions>): IOptions {
+    const normalized = { ...DEFAULT_OPTIONS };
+    for (const key of Object.keys(DEFAULT_OPTIONS) as (keyof IOptions)[]) {
+      if (typeof options?.[key] === 'boolean') {
+        normalized[key] = options[key] as boolean;
       }
     }
+    return normalized;
   }
 
+  private parseHtml(html: string): IDomObject[] {
+    return this.toDomObjects(parse(html).children);
+  }
+
+  private toDomObjects(elements: HTMLElement[]): IDomObject[] {
+    const dom: IDomObject[] = [];
+
+    for (const element of elements) {
+      const tag = element.rawTagName?.toLowerCase() ?? '';
+      if (!tag || NON_RENDERED_TAGS.has(tag)) {
+        continue;
+      }
+
+      dom.push({
+        tag,
+        metaTag: tag,
+        ids: this.splitTokens(element.id),
+        classes: Array.from(element.classList.values()).filter(Boolean),
+        children: this.toDomObjects(element.children),
+      });
+    }
+
+    return dom;
+  }
+
+  private splitTokens(value: string | undefined): string[] {
+    return value ? value.trim().split(/\s+/).filter(Boolean) : [];
+  }
+
+  /**
+   * Drops the tag from any element that already has a class or an id, so the selector
+   * stays as unspecific as possible. `metaTag` keeps the original tag for state stubs.
+   */
   private removeTags(dom: IDomObject[]): IDomObject[] {
-    return utilityService.deepCopy(dom).map(el => ({
-      ...el,
-      tag: (el.classes.length || el.ids.length) ? '' : el.tag,
-      children: this.removeTags(el.children),
+    return dom.map(element => ({
+      ...element,
+      tag: element.classes.length || element.ids.length ? '' : element.tag,
+      children: this.removeTags(element.children),
     }));
   }
 
-  private getClickSelectors(domElement: IDomObject, isCss: boolean, spacing = '', prefix = ''): string {
-    if (domElement.metaTag && HtmlToScss.CLICKABLE_TAGS.has(domElement.metaTag)) {
-      const selectorPrefix = isCss ? prefix : '&';
-      return [
-        `${spacing}${selectorPrefix}:hover {}`,
-        `${spacing}${selectorPrefix}:active {}`,
-        `${spacing}${selectorPrefix}:focus {}`,
-      ].join('\n');
-    }
-    return '';
-  }
-
-  private reduceSiblings(dom: IDomObject[]): IDomObject[] {
-    const newDom = utilityService.deepCopy(dom);
-    if (newDom.length > 1) {
-      const uniqueElements = new Map<string, IDomObject>();
-      newDom.forEach(el => {
-        const key = utilityService.generateKey(el);
-        if (!uniqueElements.has(key)) uniqueElements.set(key, el);
-      });
-      return Array.from(uniqueElements.values()).map(el => ({
-        ...el,
-        children: this.reduceSiblings(el.children),
-      }));
-    }
-    return newDom.map(el => ({ ...el, children: this.reduceSiblings(el.children) }));
-  }
-
-  private combineSimilarParents(dom: IDomObject[]): IDomObject[] {
-    const newDom = utilityService.deepCopy(dom);
-    if (newDom.length <= 1 || !newDom.some(el => el.children.length)) return newDom;
-
-    const combined = new Map<string, IDomObject>();
-    newDom.forEach(el => {
-      const key = `${el.tag}|${el.metaTag ?? ''}|${el.ids.join()}|${el.classes.join()}`;
-      if (combined.has(key)) {
-        combined.get(key)!.children = combined.get(key)!.children.concat(el.children);
-      } else {
-        combined.set(key, { ...el });
-      }
-    });
-
-    return Array.from(combined.values()).map(el => ({
-      ...el,
-      children: this.combineSimilarParents(el.children),
-    }));
-  }
-
-  private reduceTiers(dom: IDomObject[], maxDepth: number, currentDepth = 1): IDomObject[] {
-    const newDom = utilityService.deepCopy(dom);
-    if (currentDepth >= maxDepth) {
-      const tierChildren: IDomObject[] = [];
-      newDom.forEach(el => {
-        el.children = el.children.filter(child => {
-          const keep = child.classes.length > 0 && child.classes[0].startsWith('&');
-          if (!keep) tierChildren.push(child);
-          return keep;
-        });
-      });
-      return newDom.concat(tierChildren);
-    }
-    return newDom.map(el => ({
-      ...el,
-      children: this.reduceTiers(el.children, maxDepth, currentDepth + 1),
-    }));
-  }
-
+  /**
+   * Rewrites BEM classes into nestable `&` selectors: a modifier becomes a child
+   * `&--modifier` block, and an element named after its parent block becomes `&__element`.
+   */
   private convertBEM(dom: IDomObject[]): IDomObject[] {
-    return utilityService.deepCopy(dom).map(el => {
+    return dom.map(element => {
+      const ownClasses = new Set(element.classes);
       const modifiers: IDomObject[] = [];
-      const baseClasses = new Set(el.classes);
 
-      // Extract BEM modifiers
-      el.classes = el.classes.filter(cls => {
-        const modifierPrefix = cls.split('--')[0];
-        if (baseClasses.has(modifierPrefix) && cls !== modifierPrefix) {
-          modifiers.push({ tag: '', ids: [], classes: [`&--${cls.split('--')[1]}`], children: [] });
-          return false;
+      const classes = element.classes.filter(className => {
+        const block = className.split('--')[0];
+        if (block === className || !ownClasses.has(block)) {
+          return true;
         }
-        return true;
+        modifiers.push({
+          tag: '',
+          ids: [],
+          classes: [`&--${className.slice(block.length + 2)}`],
+          children: [],
+        });
+        return false;
       });
 
-      // Process children for BEM elements
-      el.children = this.convertBEM(el.children.map(child => ({
+      const children = element.children.map(child => ({
         ...child,
-        classes: child.classes.map(cls => {
-          const parentMatch = el.classes.find(p => cls.startsWith(`${p}__`));
-          return parentMatch ? cls.replace(`${parentMatch}__`, '&__') : cls;
+        classes: child.classes.map(className => {
+          const block = classes.find(
+            candidate => !candidate.startsWith('&') && className.startsWith(`${candidate}__`)
+          );
+          return block ? `&__${className.slice(block.length + 2)}` : className;
         }),
-      }))).concat(modifiers);
+      }));
 
-      return el;
+      return { ...element, classes, children: this.convertBEM(children).concat(modifiers) };
     });
   }
 
-  private extractHtml(inputHtml: string | HTMLCollection): IDomObject[] {
-    if (typeof inputHtml === 'string') {
-      const doc = new JSDOM(inputHtml).window.document;
-      return this.processElements(doc.body.children);
+  /**
+   * Collapses sibling elements that render to the same selector, concatenating their
+   * children so nothing is lost. Childless duplicates are governed by `reduceSiblings`,
+   * duplicates with children by `combineParents`.
+   */
+  private mergeSiblings(dom: IDomObject[]): IDomObject[] {
+    const merged: IDomObject[] = [];
+    const indexBySelector = new Map<string, number>();
+
+    for (const element of dom) {
+      const selector = this.getSelector(element);
+      const existingIndex = selector ? indexBySelector.get(selector) : undefined;
+
+      if (existingIndex === undefined) {
+        indexBySelector.set(selector, merged.length);
+        merged.push({ ...element, children: [...element.children] });
+        continue;
+      }
+
+      const existing = merged[existingIndex];
+      const hasChildren = !!existing.children.length || !!element.children.length;
+      const allowed = hasChildren ? this.options.combineParents : this.options.reduceSiblings;
+
+      if (!allowed) {
+        merged.push({ ...element, children: [...element.children] });
+        continue;
+      }
+
+      existing.children = existing.children.concat(element.children);
+      // Keep the state stubs if any of the merged elements was clickable.
+      if (!this.isClickable(existing) && this.isClickable(element)) {
+        existing.metaTag = element.metaTag;
+      }
     }
-    return this.processElements(inputHtml);
+
+    // Every entry was freshly constructed above, so it is safe to recurse in place.
+    for (const element of merged) {
+      element.children = this.mergeSiblings(element.children);
+    }
+
+    return merged;
   }
 
-  private processElements(elements: HTMLCollection): IDomObject[] {
-    return Array.from(elements)
-      .filter((el): el is Element => el instanceof Element && el.nodeName !== '#text')
-      .map(el => ({
-        tag: el.nodeName.toLowerCase(),
-        metaTag: el.nodeName.toLowerCase(),
-        classes: utilityService.toArray(el.classList),
-        ids: el.id ? el.id.split(' ') : [],
-        children: this.processElements(el.children),
-      }));
+  private renderScss(dom: IDomObject[], depth: number): string[] {
+    const lines: string[] = [];
+
+    for (const element of dom) {
+      const selector = this.getSelector(element);
+      if (!selector) {
+        lines.push(...this.renderScss(element.children, depth));
+        continue;
+      }
+
+      const indent = INDENT.repeat(depth);
+      const childIndent = INDENT.repeat(depth + 1);
+      const body = [
+        ...this.getStateSelectors(element).map(state => `${childIndent}&${state} {}`),
+        ...this.renderScss(element.children, depth + 1),
+      ];
+
+      if (body.length) {
+        lines.push(`${indent}${selector} {`, ...body, `${indent}}`);
+      } else {
+        lines.push(`${indent}${selector} {}`);
+      }
+    }
+
+    return lines;
   }
 
-  private convertToScss(dom: IDomObject[], nest = 1): string {
-    const spacing = '  '.repeat(nest);
-    return dom.map(el => {
-      const selector = this.getSelector(el);
-      if (!selector) return this.convertToScss(el.children, nest);
-      const childrenScss = this.convertToScss(el.children, nest + 1);
-      const clickSelectors = this.getClickSelectors(el, false, spacing);
-      return `\n${spacing}${selector} {${childrenScss}\n${clickSelectors}${spacing}}`;
-    }).join('');
-  }
+  private renderCss(dom: IDomObject[], prefix: string): string[] {
+    const lines: string[] = [];
 
-  private convertToCss(dom: IDomObject[], prefix = ''): string {
-    return dom.map(el => {
-      const selector = this.getSelector(el);
-      if (!selector) return this.convertToCss(el.children, prefix);
+    for (const element of dom) {
+      const selector = this.getSelector(element);
+      if (!selector) {
+        lines.push(...this.renderCss(element.children, prefix));
+        continue;
+      }
+
       const fullSelector = `${prefix}${selector}`;
-      const clickSelectors = this.getClickSelectors(el, true, '', fullSelector);
-      const childrenCss = this.convertToCss(el.children, `${fullSelector} `);
-      return `${fullSelector} {}\n${clickSelectors}${childrenCss}`;
-    }).join('');
+      lines.push(`${fullSelector} {}`);
+      lines.push(...this.getStateSelectors(element).map(state => `${fullSelector}${state} {}`));
+      lines.push(...this.renderCss(element.children, `${fullSelector} `));
+    }
+
+    return lines;
   }
 
-  private getSelector(dom: IDomObject): string {
-    const ids = dom.ids.length ? `#${dom.ids.join('#')}` : '';
-    const classes = dom.classes.length
-      ? dom.classes.map(cls => cls.startsWith('&') ? cls : `.${cls}`).join('')
-      : '';
-    return `${dom.tag}${ids}${classes}`;
+  private getStateSelectors(element: IDomObject): string[] {
+    return this.isClickable(element) ? STATE_SELECTORS : [];
+  }
+
+  private isClickable(element: IDomObject): boolean {
+    return !!element.metaTag && CLICKABLE_TAGS.has(element.metaTag);
+  }
+
+  private getSelector(element: IDomObject): string {
+    const ids = element.ids.length ? `#${element.ids.join('#')}` : '';
+    const classes = element.classes
+      .map(className => (className.startsWith('&') ? className : `.${className}`))
+      .join('');
+    return `${element.tag}${ids}${classes}`;
+  }
+
+  private buildHtmlComment(html: string): string {
+    // `*/` inside the markup would close the comment early.
+    const safeHtml = html.trim().replace(/\*\//g, '*\\/');
+    return `/*\n${safeHtml
+      .split('\n')
+      .map(line => ` * ${line}`)
+      .join('\n')}\n */\n`;
   }
 }
 
-export default HtmlToScss;
+export default HtmlConverterService;

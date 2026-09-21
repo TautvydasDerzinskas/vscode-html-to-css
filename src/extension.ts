@@ -1,77 +1,106 @@
 import * as vscode from 'vscode';
 import HtmlConverterService from './services/html-converter.service';
 import IOptions from './interfaces/options.interface';
-import * as manifest from '../package.json';
 
-export function activate(context: vscode.ExtensionContext) {
-    const configuration = vscode.workspace.getConfiguration('htmlToCss');
-    const options: IOptions = {
-        reduceSiblings: configuration.get('reduceSiblings', true),
-        combineParents: configuration.get('combineParents', true),
-        hideTags: configuration.get('hideTags', true),
-        convertBEM: configuration.get('convertBEM', true),
-        preappendHtml: configuration.get('preappendHtml', false),
-    };
+/** Language ids we can paste into, mapped to the output flavour to generate. */
+const OUTPUT_BY_LANGUAGE_ID: Record<string, string> = {
+  css: 'css',
+  postcss: 'css',
+  less: 'less',
+  scss: 'scss',
+  sass: 'scss',
+};
 
-    const htmlConverter = new HtmlConverterService(options);
+/** Fallback for documents whose language id is not set (e.g. plain text buffers). */
+const OUTPUT_BY_EXTENSION: Record<string, string> = {
+  css: 'css',
+  less: 'less',
+  scss: 'scss',
+  sass: 'scss',
+};
 
-    const disposable = vscode.commands.registerCommand('htmlToCss.paste', async () => {
-        try {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                throw new Error('No active editor found');
-            }
-
-            const document = editor.document;
-            const fileExtension = document.fileName.split('.').pop()?.toLowerCase();
-            
-            if (!fileExtension) {
-                throw new Error('File has no extension');
-            }
-
-            const clipboardText = await vscode.env.clipboard.readText();
-            if (!clipboardText) {
-                throw new Error('Clipboard is empty');
-            }
-
-            if (!htmlConverter.isStringHtml(clipboardText)) {
-                throw new Error('Clipboard content is not valid HTML');
-            }
-
-            const convertedCode = htmlConverter.convert(clipboardText, fileExtension);
-            
-            editor.edit(editBuilder => {
-                const position = editor.selection.active;
-                editBuilder.insert(position, convertedCode);
-            });
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-            vscode.window.showErrorMessage(`HTML to CSS conversion failed: ${errorMessage}`);
-        }
-    });
-
-    context.subscriptions.push(disposable);
-
-    // Listen for configuration changes
-    context.subscriptions.push(
-        vscode.workspace.onDidChangeConfiguration(e => {
-            if (e.affectsConfiguration('htmlToCss')) {
-                const newConfiguration = vscode.workspace.getConfiguration('htmlToCss');
-                const newOptions: IOptions = {
-                    reduceSiblings: newConfiguration.get('reduceSiblings', true),
-                    combineParents: newConfiguration.get('combineParents', true),
-                    hideTags: newConfiguration.get('hideTags', true),
-                    convertBEM: newConfiguration.get('convertBEM', true),
-                    preappendHtml: newConfiguration.get('preappendHtml', false),
-                };
-                htmlConverter.updateConfiguration(newOptions);
-            }
-        })
-    );
-
-    console.info(
-        `[vscode-html-to-css] v${manifest.version} activated!`,
-    );
+function readOptions(scope: vscode.Uri | undefined): IOptions {
+  const configuration = vscode.workspace.getConfiguration('htmlToCss', scope);
+  return {
+    reduceSiblings: configuration.get('reduceSiblings', true),
+    combineParents: configuration.get('combineParents', true),
+    hideTags: configuration.get('hideTags', true),
+    convertBEM: configuration.get('convertBEM', true),
+    preappendHtml: configuration.get('preappendHtml', false),
+  };
 }
 
-export function deactivate() {}
+function resolveOutputFlavour(document: vscode.TextDocument): string | undefined {
+  const byLanguageId = OUTPUT_BY_LANGUAGE_ID[document.languageId];
+  if (byLanguageId) {
+    return byLanguageId;
+  }
+
+  const extension = document.fileName.split('.').pop()?.toLowerCase() ?? '';
+  return OUTPUT_BY_EXTENSION[extension];
+}
+
+async function paste(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showErrorMessage('HTML to CSS: open a file before pasting.');
+    return;
+  }
+
+  const outputFlavour = resolveOutputFlavour(editor.document);
+  if (!outputFlavour) {
+    vscode.window.showErrorMessage(
+      'HTML to CSS: open a CSS, LESS, SCSS or SASS file to paste converted selectors.'
+    );
+    return;
+  }
+
+  const clipboardText = await vscode.env.clipboard.readText();
+  if (!clipboardText.trim()) {
+    vscode.window.showErrorMessage('HTML to CSS: the clipboard is empty.');
+    return;
+  }
+
+  const converter = new HtmlConverterService(readOptions(editor.document.uri));
+  if (!converter.isStringHtml(clipboardText)) {
+    vscode.window.showErrorMessage('HTML to CSS: the clipboard does not contain HTML.');
+    return;
+  }
+
+  const converted = converter.convert(clipboardText, outputFlavour);
+  if (!converted) {
+    vscode.window.showWarningMessage('HTML to CSS: the clipboard HTML has no elements to convert.');
+    return;
+  }
+
+  const applied = await editor.edit(editBuilder => {
+    for (const selection of editor.selections) {
+      if (selection.isEmpty) {
+        editBuilder.insert(selection.active, converted);
+      } else {
+        editBuilder.replace(selection, converted);
+      }
+    }
+  });
+
+  if (!applied) {
+    vscode.window.showErrorMessage('HTML to CSS: the converted selectors could not be inserted.');
+  }
+}
+
+export function activate(context: vscode.ExtensionContext): void {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('htmlToCss.paste', async () => {
+      try {
+        await paste();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        vscode.window.showErrorMessage(`HTML to CSS conversion failed: ${message}`);
+      }
+    })
+  );
+}
+
+export function deactivate(): void {
+  // Nothing to clean up: the command disposable is owned by the extension context.
+}

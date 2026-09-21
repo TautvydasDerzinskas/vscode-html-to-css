@@ -13,7 +13,6 @@ coverage/
 .vscode-test/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -40,10 +39,6 @@ yarn-error.log*
 
 # TypeScript
 *.tsbuildinfo
-
-# Jest
-.jest/
-jest.config.js.snap
 
 # Misc
 .DS_Store

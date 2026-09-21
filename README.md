@@ -1,105 +1,130 @@
-# HTML to CSS / LESS / SCSS Converter
+# HTML to CSS / LESS / SCSS
 
-A Visual Studio Code extension that converts HTML structure to CSS, LESS, or SCSS selectors. This extension helps you quickly generate CSS selectors from HTML markup, with support for BEM methodology and various optimization options.
-
-## Features
-
-- Convert HTML structure to CSS/LESS/SCSS selectors
-- Support for BEM methodology
-- Smart tag hiding when classes or IDs are present
-- Sibling reduction for cleaner output
-- Parent combination for better organization
-- Support for clickable elements (hover, active, focus states)
-- Configuration options for customization
-- Support for multiple file extensions (.css, .less, .scss, .sass)
-
-## Installation
-
-1. Open Visual Studio Code
-2. Go to the Extensions view (Ctrl+Shift+X or Cmd+Shift+X)
-3. Search for "HTML to CSS"
-4. Click Install
+A Visual Studio Code extension that turns HTML markup on your clipboard into ready-to-fill
+CSS, LESS or SCSS selectors.
 
 ## Usage
 
-1. Copy your HTML code to the clipboard
-2. Open a CSS/LESS/SCSS file in VS Code
-3. Place your cursor where you want to insert the converted code
-4. Press `Ctrl+Alt+V` (Windows/Linux) or `Cmd+Alt+V` (Mac)
-5. The converted CSS/LESS/SCSS code will be inserted at the cursor position
+1. Copy some HTML to the clipboard.
+2. Open a `.css`, `.less`, `.scss` or `.sass` file.
+3. Press `Ctrl+Alt+V` (Windows/Linux) or `Cmd+Alt+V` (macOS), or pick
+   **Paste HTML converted to CSS / LESS / SCSS** from the editor context menu.
 
-## Configuration
-
-The extension can be configured through VS Code settings:
-
-```json
-{
-    "htmlToCss.hideTags": true,        // Hide tag selectors if element has class or id
-    "htmlToCss.convertBEM": true,      // Convert BEM classes to nested selectors
-    "htmlToCss.preappendHtml": false,  // Add original HTML as a comment
-    "htmlToCss.reduceSiblings": true,  // Combine identical sibling elements
-    "htmlToCss.combineParents": true   // Combine identical parent elements
-}
-```
+The selectors are inserted at the cursor. If you have text selected, it is replaced.
 
 ## Examples
 
-### Input HTML
+Given this markup:
+
 ```html
 <div class="card">
-    <div class="card__header">
-        <h2 class="card__title">Title</h2>
-    </div>
-    <div class="card__body">
-        <p class="card__text">Content</p>
-    </div>
+  <div class="card__header">
+    <h2 class="card__title">Title</h2>
+  </div>
+  <div class="card__body">
+    <p class="card__text">Content</p>
+  </div>
 </div>
 ```
 
-### Output CSS
-```css
-.card {}
-.card__header {}
-.card__title {}
-.card__body {}
-.card__text {}
-```
+In a `.scss` or `.less` file you get nested selectors, with BEM modifiers folded into `&`:
 
-### Output SCSS/LESS
 ```scss
 .card {
-    &__header {}
-    &__title {}
-    &__body {}
-    &__text {}
+  &__header {
+    .card__title {
+    }
+  }
+  &__body {
+    .card__text {
+    }
+  }
 }
 ```
 
-## Features in Detail
+`.card__title` stays written out in full on purpose: nesting it as `&__title` inside
+`&__header` would compile to `.card__header__title`, which is not the class in your markup.
 
-### BEM Support
-When using SCSS or LESS, the extension automatically converts BEM classes to nested selectors using the `&` parent selector.
+In a `.css` file you get flat descendant selectors instead:
 
-### Clickable Elements
-The extension automatically adds hover, active, and focus states for clickable elements (a, button).
+```css
+.card {
+}
+.card .card__header {
+}
+.card .card__header .card__title {
+}
+.card .card__body {
+}
+.card .card__body .card__text {
+}
+```
 
-### Smart Tag Hiding
-When an element has classes or IDs, the tag selector is hidden to reduce specificity.
+Clickable elements (`<a>`, `<button>`) also get state stubs:
 
-### Sibling Reduction
-Identical sibling elements are combined to reduce code duplication.
+```scss
+.nav {
+  &__link {
+    &:hover {
+    }
+    &:active {
+    }
+    &:focus {
+    }
+  }
+}
+```
 
-### Parent Combination
-Similar parent elements are combined to improve code organization.
+## Settings
+
+| Setting                    | Default | Description                                                                              |
+| -------------------------- | ------- | ---------------------------------------------------------------------------------------- |
+| `htmlToCss.hideTags`       | `true`  | Drop the tag name when an element already has a class or an id, keeping specificity low. |
+| `htmlToCss.convertBEM`     | `true`  | Fold BEM elements and modifiers into `&__element` / `&--modifier`. Nested output only.   |
+| `htmlToCss.reduceSiblings` | `true`  | Collapse duplicate sibling elements that produce the same selector.                      |
+| `htmlToCss.combineParents` | `true`  | Merge duplicate sibling elements that have children, combining their children.           |
+| `htmlToCss.preappendHtml`  | `false` | Prepend the source markup as a comment above the generated selectors.                    |
+
+`hideTags` keeps track of the original tag internally, so state stubs are still generated
+for `<a>` and `<button>` even when their tag name is hidden.
+
+Elements that never render — `script`, `style`, `meta`, `link`, `title`, `base`, `head`,
+`noscript` and `template` — are skipped.
+
+## Development
+
+Requires Node 22.14 or newer (see `.nvmrc`).
+
+```bash
+npm install
+npm run lint        # oxlint
+npm run typecheck   # tsc --noEmit
+npm test            # vitest
+npm run build       # esbuild -> dist/extension.js
+npm run package     # produces a .vsix
+```
+
+Press `F5` in VS Code to launch the extension in a development host.
+
+The converter has no VS Code dependency, so it is unit tested directly. `src/test/vscode.ts`
+is a small stand-in for the `vscode` module that lets `src/extension.ts` be tested in Node too.
+
+### Releasing
+
+Releases are automatic. Commit with `npm run commit` (commitizen) so messages follow
+[conventional commits](https://www.conventionalcommits.org/); on every push to `main`,
+semantic-release works out the next version from those messages, updates the changelog,
+tags the release and publishes to the VS Code Marketplace and Open VSX.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome. Please open a pull request.
 
 ## License
 
-This extension is licensed under the MIT License - see the LICENSE file for details.
+MIT — see [LICENSE](LICENSE).
 
 ## Support
 
-If you encounter any issues or have suggestions, please file them in the [GitHub issues](https://github.com/SlimDogs/vscode-html-to-css/issues).
+Please file issues at
+[GitHub issues](https://github.com/TautvydasDerzinskas/vscode-html-to-css/issues).
