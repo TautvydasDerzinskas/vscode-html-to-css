@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.4.0...v1.5.0) (2026-09-21)
+
+### Features
+
+* add two new configurable options for ignoring selectors ([f46afa1](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/f46afa135a7766a66a1fc54e8380e8e49cbe7a32))
+
 ## [1.4.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.3.0...v1.4.0) (2026-09-21)
 
 ### Features
