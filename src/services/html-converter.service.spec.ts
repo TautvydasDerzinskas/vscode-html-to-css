@@ -292,6 +292,93 @@ describe('HtmlConverterService', () => {
     });
   });
 
+  describe('template syntax (Twig, Jinja2, Nunjucks, Liquid, Handlebars, Vue)', () => {
+    const twigBlock = `{% block card %}
+<div class="card {{ extraClass }}">
+  {# the header #}
+  <div class="card__header {% if featured %}card__header--featured{% endif %}">
+    <h2 class="card__title">{{ title }}</h2>
+  </div>
+  {% for item in items %}
+    <div class="card__item card__item--{{ item.type }}">{{ item.name }}</div>
+  {% endfor %}
+</div>
+{% endblock %}`;
+
+    it('converts a Twig block', () => {
+      expect(convert(twigBlock, 'scss')).toBe(
+        '.card {\n' +
+          '  &__header {\n' +
+          '    .card__title {}\n' +
+          '    &--featured {}\n' +
+          '  }\n' +
+          '  &__item {}\n' +
+          '}\n'
+      );
+    });
+
+    it('keeps a class written inside a statement', () => {
+      expect(convert('<div class="a {% if x %}a--on{% endif %}">y</div>', 'scss')).toBe(
+        '.a {\n  &--on {}\n}\n'
+      );
+    });
+
+    it('drops a class that is entirely an expression', () => {
+      expect(convert('<div class="card {{ extra }}">x</div>', 'css')).toBe('.card {}\n');
+    });
+
+    it('drops a class only partly built from an expression', () => {
+      // ".card__item--" would be a selector that can never match.
+      expect(convert('<div class="card__item card__item--{{ t }}">x</div>', 'css')).toBe(
+        '.card__item {}\n'
+      );
+    });
+
+    it('drops an id built from an expression', () => {
+      expect(convert('<div id="{{ id }}" class="a">x</div>', 'css')).toBe('.a {}\n');
+    });
+
+    it('removes template comments', () => {
+      expect(convert('{# note #}<div class="a">x</div>', 'css')).toBe('.a {}\n');
+    });
+
+    it('ignores statements that wrap whole elements', () => {
+      const html = '{% for i in items %}<div class="item">x</div>{% endfor %}';
+      expect(convert(html, 'css')).toBe('.item {}\n');
+    });
+
+    it('keeps a class inside a Handlebars or Mustache block helper', () => {
+      expect(convert('<div class="card {{#if on}}card--on{{/if}}">x</div>', 'scss')).toBe(
+        '.card {\n  &--on {}\n}\n'
+      );
+    });
+
+    it('removes Handlebars comments', () => {
+      expect(convert('{{! note }}<div class="a">x</div>', 'css')).toBe('.a {}\n');
+    });
+
+    it('handles Vue and Angular style interpolation', () => {
+      expect(convert('<div class="row" :class="x">{{ value }}</div>', 'css')).toBe('.row {}\n');
+    });
+
+    it('skips an element whose tag name is an expression', () => {
+      expect(convert('<{{ tag }}><div class="a">x</div></{{ tag }}>', 'css')).toBe('.a {}\n');
+    });
+
+    it('recognises a Twig block as convertible markup', () => {
+      const service = new HtmlConverterService(baseOptions);
+      expect(service.isStringHtml(twigBlock)).toBe(true);
+      expect(service.isStringHtml('{% include "x.twig" %}')).toBe(false);
+      expect(service.isStringHtml('{% if a < b %}text{% endif %}')).toBe(false);
+    });
+
+    it('leaves plain HTML untouched', () => {
+      expect(convert('<div class="a"><span class="b">x</span></div>', 'scss')).toBe(
+        '.a {\n  .b {}\n}\n'
+      );
+    });
+  });
+
   describe('updateConfiguration', () => {
     it('applies the new options to later conversions', () => {
       const service = new HtmlConverterService({ ...baseOptions, hideTags: true });

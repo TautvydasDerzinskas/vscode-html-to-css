@@ -1,11 +1,11 @@
 # HTML to CSS / LESS / SCSS
 
-A Visual Studio Code extension that turns HTML markup on your clipboard into ready-to-fill
-CSS, LESS or SCSS selectors.
+A Visual Studio Code extension that turns HTML or template markup on your clipboard into
+ready-to-fill CSS, LESS or SCSS selectors.
 
 ## Usage
 
-1. Copy some HTML to the clipboard.
+1. Copy some HTML or template markup to the clipboard.
 2. Open a `.css`, `.less`, `.scss` or `.sass` file.
 3. Press `Ctrl+Alt+V` (Windows/Linux) or `Cmd+Alt+V` (macOS), or pick
    **Paste HTML converted to CSS / LESS / SCSS** from the editor context menu.
@@ -75,6 +75,51 @@ Clickable elements (`<a>`, `<button>`) also get state stubs:
 }
 ```
 
+## Template languages
+
+Twig templates work the same as plain HTML — paste a block and the template syntax is stripped
+before the markup is read:
+
+```twig
+{% block card %}
+<div class="card {{ extraClass }}">
+  {# the header #}
+  <div class="card__header {% if featured %}card__header--featured{% endif %}">
+    <h2 class="card__title">{{ title }}</h2>
+  </div>
+  {% for item in items %}
+    <div class="card__item card__item--{{ item.type }}">{{ item.name }}</div>
+  {% endfor %}
+</div>
+{% endblock %}
+```
+
+gives you:
+
+```scss
+.card {
+  &__header {
+    .card__title {
+    }
+    &--featured {
+    }
+  }
+  &__item {
+  }
+}
+```
+
+Two things worth knowing:
+
+- A class written inside `{% if %}` is **kept**, so `card__header--featured` still becomes a
+  `&--featured` modifier.
+- A class built from an expression is **dropped**, because its value is only known at render
+  time. `card__item--{{ item.type }}` would otherwise produce `.card__item--`, a selector that
+  can never match anything.
+
+The same handling covers **Jinja2**, **Nunjucks**, **Liquid**, **Handlebars** and **Mustache**,
+and the `{{ ... }}` half covers **Vue** and **Angular** templates.
+
 ## Settings
 
 | Setting                    | Default | Description                                                                              |
@@ -90,31 +135,6 @@ for `<a>` and `<button>` even when their tag name is hidden.
 
 Elements that never render — `script`, `style`, `meta`, `link`, `title`, `base`, `head`,
 `noscript` and `template` — are skipped.
-
-## Development
-
-Requires Node 22.14 or newer (see `.nvmrc`).
-
-```bash
-npm install
-npm run lint        # oxlint
-npm run typecheck   # tsc --noEmit
-npm test            # vitest
-npm run build       # esbuild -> dist/extension.js
-npm run package     # produces a .vsix
-```
-
-Press `F5` in VS Code to launch the extension in a development host.
-
-The converter has no VS Code dependency, so it is unit tested directly. `src/test/vscode.ts`
-is a small stand-in for the `vscode` module that lets `src/extension.ts` be tested in Node too.
-
-### Releasing
-
-Releases are automatic. Commit with `npm run commit` (commitizen) so messages follow
-[conventional commits](https://www.conventionalcommits.org/); on every push to `main`,
-semantic-release works out the next version from those messages, updates the changelog,
-tags the release and publishes to the VS Code Marketplace and Open VSX.
 
 ## Contributing
 
