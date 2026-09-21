@@ -240,7 +240,7 @@ ignored produces no rule — it does not fall back to a bare tag selector.
 for `<a>` and `<button>` even when their tag name is hidden.
 
 Elements that never render — `script`, `style`, `meta`, `link`, `title`, `base`, `head`,
-`noscript` and `template` — are skipped.
+and `noscript` — are skipped. A `<template>` wrapper, such as a Vue single-file component root, produces no selector of its own, but its contents are converted.
 
 ## Contributing
 

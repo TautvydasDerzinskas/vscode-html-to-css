@@ -15,9 +15,14 @@ const NON_RENDERED_TAGS = new Set([
   'noscript',
   'script',
   'style',
-  'template',
   'title',
 ]);
+
+/**
+ * Wrappers that never render themselves but hold real markup, like Vue's single-file
+ * component root. They produce no selector, and their children move up a level.
+ */
+const WRAPPER_TAGS = new Set(['template']);
 
 const STATE_SELECTORS = [':hover', ':active', ':focus'];
 
@@ -189,6 +194,11 @@ class HtmlConverterService {
       const rawTag = element.rawTagName ?? '';
       const tag = rawTag.toLowerCase();
       if (!tag || tag.includes(DYNAMIC_VALUE_MARKER) || NON_RENDERED_TAGS.has(tag)) {
+        continue;
+      }
+
+      if (WRAPPER_TAGS.has(tag)) {
+        dom.push(...this.toDomObjects(element.children));
         continue;
       }
 

@@ -567,6 +567,48 @@ describe('HtmlConverterService', () => {
     });
   });
 
+  describe('clipboard content that v1.2.0 rejected as "not valid HTML code"', () => {
+    // v1.2.0 required the whole clipboard to start with "<" and end with ">", so any
+    // snippet with template syntax, code or text around the markup was refused.
+    const service = new HtmlConverterService(baseOptions);
+    const cases: [string, string, string][] = [
+      ['a Twig block', '{% block card %}\n<div class="card">x</div>\n{% endblock %}', '.card {}\n'],
+      ['a Twig comment first', '{# card #}\n<div class="card">x</div>', '.card {}\n'],
+      ['a React return statement', 'return (\n  <div className="card">x</div>\n);', '.card {}\n'],
+      [
+        'a whole React component',
+        'export default function Card() {\n  return <div className="card">x</div>;\n}',
+        '.card {}\n',
+      ],
+      ['JSX ending with an expression', '<div className="a">x</div>\n{footer}', '.a {}\n'],
+      ['a JSX comment first', '{/* hero */}\n<section className="hero">x</section>', '.hero {}\n'],
+      ['text before the markup', 'Hello <b class="b">x</b>', '.b {}\n'],
+      ['text after the markup', '<div class="a">x</div> trailing text', '.a {}\n'],
+      ['a trailing semicolon', '<div className="a">x</div>;', '.a {}\n'],
+      ['a Handlebars block', '{{#if x}}<div class="a">y</div>{{/if}}', '.a {}\n'],
+    ];
+
+    it.each(cases)('accepts and converts %s', (_name, clipboard, expected) => {
+      expect(service.isStringHtml(clipboard)).toBe(true);
+      expect(service.convert(clipboard, 'css')).toBe(expected);
+    });
+  });
+
+  describe('wrapper elements', () => {
+    it('converts the contents of a Vue <template> root', () => {
+      expect(
+        convert(
+          '<template>\n  <div class="a"><span class="b">{{ msg }}</span></div>\n</template>',
+          'scss'
+        )
+      ).toBe('.a {\n  .b {}\n}\n');
+    });
+
+    it('never emits a selector for the wrapper itself', () => {
+      expect(convert('<template><p>x</p></template>', 'css', { hideTags: false })).toBe('p {}\n');
+    });
+  });
+
   describe('updateConfiguration', () => {
     it('applies the new options to later conversions', () => {
       const service = new HtmlConverterService({ ...baseOptions, hideTags: true });
