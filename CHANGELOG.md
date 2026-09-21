@@ -1,3 +1,9 @@
+## [1.5.1](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.5.0...v1.5.1) (2026-09-21)
+
+### Bug Fixes
+
+* vue template closing tag issue ([f762a1f](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/f762a1fd9acbd8a716f473331ab083b12a4be9d7))
+
 ## [1.5.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.4.0...v1.5.0) (2026-09-21)
 
 ### Features
