@@ -1,3 +1,14 @@
+## [1.3.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.2.0...v1.3.0) (2026-09-21)
+
+### Features
+
+* bring back the code to up to date state ([ee6f624](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/ee6f62407704ad66dd1eadd1600e6488bef08b96))
+
+### Bug Fixes
+
+* releasing issues ([c21bb61](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/c21bb61b0efd4d07432f31e73eec88506b73e205))
+* upgrade repo ([6dcc883](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/6dcc8838a60e0dd05cd05ae031157cabc379aa87))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
