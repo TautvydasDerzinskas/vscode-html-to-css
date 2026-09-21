@@ -379,6 +379,101 @@ describe('HtmlConverterService', () => {
     });
   });
 
+  describe('JSX (React, Next.js)', () => {
+    it('reads className instead of class', () => {
+      expect(
+        convert('<div className="card"><span className="card__title">x</span></div>', 'scss')
+      ).toBe('.card {\n  &__title {}\n}\n');
+    });
+
+    it('is not derailed by an arrow function in an attribute', () => {
+      // The `>` in `=>` used to end the tag early, losing every attribute after it.
+      expect(
+        convert('<button className="btn" onClick={() => setOpen(true)}>x</button>', 'css')
+      ).toBe('.btn {}\n.btn:hover {}\n.btn:active {}\n.btn:focus {}\n');
+    });
+
+    it('ignores a style object without mistaking it for a template expression', () => {
+      expect(convert('<div className="a" style={{ color: \'red\' }}>x</div>', 'css')).toBe(
+        '.a {}\n'
+      );
+    });
+
+    it('resolves CSS-modules lookups', () => {
+      expect(
+        convert(
+          '<div className={styles.card}><p className={styles["card-text"]}>x</p></div>',
+          'scss'
+        )
+      ).toBe('.card {\n  .card-text {}\n}\n');
+    });
+
+    it('collects class names from clsx and friends', () => {
+      expect(convert('<div className={clsx("card", isOn && "card--on")}>x</div>', 'scss')).toBe(
+        '.card {\n  &--on {}\n}\n'
+      );
+    });
+
+    it('keeps only the first branch of a ternary', () => {
+      // ".link.link-off" would describe a state that can never happen.
+      expect(convert('<a className={on ? "link" : "link-off"}>x</a>', 'css')).toBe(
+        '.link {}\n.link:hover {}\n.link:active {}\n.link:focus {}\n'
+      );
+    });
+
+    it('keeps a ternary inside a clsx call from creating an impossible selector', () => {
+      expect(convert('<div className={clsx("card", on ? "a" : "b")}>x</div>', 'css')).toBe(
+        '.card.a {}\n'
+      );
+    });
+
+    it('keeps the static part of a template literal and drops the dynamic one', () => {
+      // "card--" on its own would be a selector that never matches.
+      expect(convert('<div className={`card card--${size}`}>x</div>', 'css')).toBe('.card {}\n');
+    });
+
+    it('drops a className it cannot resolve, leaving a plain element', () => {
+      expect(convert('<div className={getClass()}><b className="b">x</b></div>', 'css')).toBe(
+        'div {}\ndiv .b {}\n'
+      );
+    });
+
+    it('does not turn a component into a tag selector', () => {
+      expect(convert('<Layout><main className="main">x</main></Layout>', 'css')).toBe('.main {}\n');
+    });
+
+    it('keeps a className passed to a component', () => {
+      expect(
+        convert(
+          '<Card className="card"><Card.Header className="card__header">x</Card.Header></Card>',
+          'scss'
+        )
+      ).toBe('.card {\n  &__header {}\n}\n');
+    });
+
+    it('never adds state stubs for a component named like a clickable tag', () => {
+      expect(convert('<Button className="btn">x</Button>', 'css')).toBe('.btn {}\n');
+    });
+
+    it('handles fragments, spreads and JSX comments', () => {
+      expect(
+        convert(
+          '<><div {...props} className="a">{/* note */}<i className="a__icon" /></div></>',
+          'scss'
+        )
+      ).toBe('.a {\n  &__icon {}\n}\n');
+    });
+
+    it('still treats upper-case HTML as HTML', () => {
+      expect(convert('<DIV><SPAN>x</SPAN></DIV>', 'css')).toBe('div {}\ndiv span {}\n');
+    });
+
+    it('recognises a JSX snippet as convertible markup', () => {
+      const service = new HtmlConverterService(baseOptions);
+      expect(service.isStringHtml('<div className={styles.a}>x</div>')).toBe(true);
+    });
+  });
+
   describe('updateConfiguration', () => {
     it('applies the new options to later conversions', () => {
       const service = new HtmlConverterService({ ...baseOptions, hideTags: true });

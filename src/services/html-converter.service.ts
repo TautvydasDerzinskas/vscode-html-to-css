@@ -1,4 +1,5 @@
 import { HTMLElement, parse } from 'node-html-parser';
+import { DYNAMIC_VALUE_MARKER, preprocessMarkup } from './markup-preprocessor.service';
 import IOptions from '../interfaces/options.interface';
 import IDomObject from '../interfaces/dom-object.interface';
 
@@ -22,19 +23,6 @@ const STATE_SELECTORS = [':hover', ':active', ':focus'];
 
 /** Matches an opening, closing or self-closing tag. */
 const HTML_PATTERN = /<\s*\/?\s*[a-zA-Z][^>]*>/;
-
-/**
- * Stands in for a template expression. Its value is only known at render time, so any
- * selector built from it has to be dropped rather than guessed at.
- */
-const TEMPLATE_EXPRESSION_MARKER = '\uE000';
-
-/** `{# comment #}`, `{% statement %}` and `{{ expression }}`. */
-const TEMPLATE_COMMENT_PATTERN = /\{#[\s\S]*?#\}/g;
-const TEMPLATE_STATEMENT_PATTERN = /\{%[\s\S]*?%\}/g;
-/** Handlebars and Mustache block helpers and comments: `{{#if}}`, `{{/if}}`, `{{! note }}`. */
-const TEMPLATE_BLOCK_PATTERN = /\{\{[#/!][\s\S]*?\}\}/g;
-const TEMPLATE_EXPRESSION_PATTERN = /\{\{[\s\S]*?\}\}/g;
 
 const INDENT = '  ';
 
@@ -74,7 +62,7 @@ class HtmlConverterService {
    * Cheap check for whether a string looks like an HTML fragment.
    */
   public isStringHtml(text: string): boolean {
-    return !!text?.trim() && HTML_PATTERN.test(this.stripTemplateSyntax(text));
+    return !!text?.trim() && HTML_PATTERN.test(preprocessMarkup(text));
   }
 
   /**
@@ -115,42 +103,24 @@ class HtmlConverterService {
   }
 
   private parseHtml(html: string): IDomObject[] {
-    return this.toDomObjects(parse(this.stripTemplateSyntax(html)).children);
-  }
-
-  /**
-   * Removes Twig-style template syntax so only the markup reaches the parser. Statements are
-   * dropped but the literal text around them is kept, so a class written inside `{% if %}`
-   * still produces a selector. Expressions become a marker instead, so the tokens built from
-   * them can be discarded.
-   *
-   * The same syntax covers Jinja2, Nunjucks, Liquid, Handlebars and Mustache, and the
-   * expression half covers Vue and Angular templates.
-   */
-  private stripTemplateSyntax(html: string): string {
-    return (
-      html
-        .replace(TEMPLATE_COMMENT_PATTERN, '')
-        .replace(TEMPLATE_STATEMENT_PATTERN, '')
-        // Must run before the expression pattern, which would otherwise swallow `{{#if}}`
-        // and take the literal class names between the helpers down with it.
-        .replace(TEMPLATE_BLOCK_PATTERN, '')
-        .replace(TEMPLATE_EXPRESSION_PATTERN, TEMPLATE_EXPRESSION_MARKER)
-    );
+    return this.toDomObjects(parse(preprocessMarkup(html)).children);
   }
 
   private toDomObjects(elements: HTMLElement[]): IDomObject[] {
     const dom: IDomObject[] = [];
 
     for (const element of elements) {
-      const tag = element.rawTagName?.toLowerCase() ?? '';
-      if (!tag || tag.includes(TEMPLATE_EXPRESSION_MARKER) || NON_RENDERED_TAGS.has(tag)) {
+      const rawTag = element.rawTagName ?? '';
+      const tag = rawTag.toLowerCase();
+      if (!tag || tag.includes(DYNAMIC_VALUE_MARKER) || NON_RENDERED_TAGS.has(tag)) {
         continue;
       }
 
+      const isComponent = this.isComponentTag(rawTag);
+
       dom.push({
-        tag,
-        metaTag: tag,
+        tag: isComponent ? '' : tag,
+        metaTag: isComponent ? undefined : tag,
         ids: this.splitTokens(element.id),
         classes: this.filterTokens(Array.from(element.classList.values())),
         children: this.toDomObjects(element.children),
@@ -164,9 +134,18 @@ class HtmlConverterService {
     return this.filterTokens(value ? value.trim().split(/\s+/) : []);
   }
 
+  /**
+   * A JSX component renders to markup we cannot see, so its name is never a CSS selector.
+   * Detected as PascalCase (or dotted, like `Foo.Bar`) to leave upper-case HTML alone:
+   * `<DIV>` is a div, `<Card>` is a component.
+   */
+  private isComponentTag(rawTag: string): boolean {
+    return /^[A-Z]/.test(rawTag) && (/[a-z]/.test(rawTag) || rawTag.includes('.'));
+  }
+
   /** Drops empty tokens and any token whose value depends on a template expression. */
   private filterTokens(tokens: string[]): string[] {
-    return tokens.filter(token => token && !token.includes(TEMPLATE_EXPRESSION_MARKER));
+    return tokens.filter(token => token && !token.includes(DYNAMIC_VALUE_MARKER));
   }
 
   /**

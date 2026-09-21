@@ -1,7 +1,7 @@
 {
   "name": "vscode-html-to-css",
   "displayName": "HTML to CSS / LESS / SCSS",
-  "description": "Copy HTML or Twig markup and paste it as CSS / LESS / SCSS selectors code",
+  "description": "Copy HTML, JSX/React or Twig markup and paste it as CSS / LESS / SCSS selectors code",
   "version": "1.3.0",
   "publisher": "tautvydasderzinskas",
   "icon": "images/html2css_transparent.png",
@@ -20,6 +20,11 @@
     "less",
     "scss",
     "sass",
+    "react",
+    "jsx",
+    "tsx",
+    "nextjs",
+    "classname",
     "twig",
     "jinja",
     "nunjucks",
@@ -27,8 +32,8 @@
     "handlebars",
     "template",
     "html to css",
-    "html to less",
-    "html to scss",
+    "jsx to css",
+    "react to css",
     "twig to css"
   ],
   "scripts": {

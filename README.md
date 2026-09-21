@@ -1,11 +1,12 @@
 # HTML to CSS / LESS / SCSS
 
-A Visual Studio Code extension that turns HTML or template markup on your clipboard into
-ready-to-fill CSS, LESS or SCSS selectors.
+A Visual Studio Code extension that turns HTML, JSX or template markup on your clipboard into
+ready-to-fill CSS, LESS or SCSS selectors. Works with plain HTML, React and Next.js, and Twig
+and friends.
 
 ## Usage
 
-1. Copy some HTML or template markup to the clipboard.
+1. Copy some HTML, JSX or template markup to the clipboard.
 2. Open a `.css`, `.less`, `.scss` or `.sass` file.
 3. Press `Ctrl+Alt+V` (Windows/Linux) or `Cmd+Alt+V` (macOS), or pick
    **Paste HTML converted to CSS / LESS / SCSS** from the editor context menu.
@@ -74,6 +75,67 @@ Clickable elements (`<a>`, `<button>`) also get state stubs:
   }
 }
 ```
+
+## React and Next.js
+
+JSX is supported directly, including `className`, so you can copy a component's markup
+straight out of a `.jsx` or `.tsx` file:
+
+```jsx
+<div className="card">
+  <button className="card__btn" onClick={() => setOpen(true)} style={{ color: 'red' }}>
+    {label}
+  </button>
+  {items.map(item => (
+    <span className={styles.item} key={item.id}>
+      {item.name}
+    </span>
+  ))}
+</div>
+```
+
+gives you:
+
+```scss
+.card {
+  &__btn {
+    &:hover {
+    }
+    &:active {
+    }
+    &:focus {
+    }
+  }
+  .item {
+  }
+}
+```
+
+What it understands:
+
+| Written as                                   | Becomes                                                    |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| `className="card"`                           | `.card`                                                    |
+| `className={styles.card}` (CSS modules)      | `.card`                                                    |
+| `className={styles['card-text']}`            | `.card-text`                                               |
+| ``className={`card card--${size}`}``         | `.card` — the dynamic half is dropped                      |
+| `className={clsx('card', on && 'card--on')}` | `.card.card--on`                                           |
+| `className={on ? 'link' : 'link-off'}`       | `.link` — first branch only                                |
+| `className={getClass()}`                     | nothing resolvable, so the element is treated as unclassed |
+
+A few deliberate choices:
+
+- **Components never become selectors.** `<Card className="card">` contributes `.card`, but
+  `Card` itself is not a CSS element, so no `card` tag selector is emitted. `<Layout>` with no
+  className simply disappears and its children move up. Upper-case HTML like `<DIV>` is still
+  treated as HTML.
+- **A ternary keeps only its first branch**, because the branches are alternatives —
+  `.link.link-off` would describe a state that can never happen.
+- **Dynamic class names are dropped**, not guessed at. `card--${size}` would otherwise leave
+  `.card--`, which matches nothing.
+- Fragments (`<>`), spread props (`{...props}`), JSX comments, `style={{ ... }}` and event
+  handlers are all ignored safely. An arrow function in an attribute no longer truncates the
+  element.
 
 ## Template languages
 
@@ -148,3 +210,8 @@ MIT — see [LICENSE](LICENSE).
 
 Please file issues at
 [GitHub issues](https://github.com/TautvydasDerzinskas/vscode-html-to-css/issues).
+
+If this extension saves you time, you can support its development:
+
+- [GitHub Sponsors](https://github.com/sponsors/TautvydasDerzinskas)
+- [Buy Me a Coffee](https://buymeacoffee.com/TautvydasDerzinskas)
