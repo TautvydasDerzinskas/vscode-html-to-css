@@ -77,6 +77,17 @@ describe('extension', () => {
     expect(state.edits).toEqual([{ type: 'insert', value: 'div.a {}\n' }]);
   });
 
+  it('passes classesOnly and ignoredSelectors through from settings', async () => {
+    state.activeTextEditor = createEditor({ languageId: 'css', fileName: '/styles.css' });
+    state.clipboardText = '<div id="app" class="container"><p class="intro">x</p></div>';
+    state.configuration['htmlToCss.classesOnly'] = true;
+    state.configuration['htmlToCss.ignoredSelectors'] = ['.container'];
+
+    await runPasteCommand();
+
+    expect(state.edits).toEqual([{ type: 'insert', value: '.intro {}\n' }]);
+  });
+
   it('reports when there is no active editor', async () => {
     await runPasteCommand();
     expect(state.edits).toEqual([]);

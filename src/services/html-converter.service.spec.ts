@@ -8,6 +8,8 @@ const baseOptions: IOptions = {
   hideTags: true,
   convertBEM: true,
   preappendHtml: false,
+  classesOnly: false,
+  ignoredSelectors: [],
 };
 
 const validHTMLCode = `
@@ -471,6 +473,97 @@ describe('HtmlConverterService', () => {
     it('recognises a JSX snippet as convertible markup', () => {
       const service = new HtmlConverterService(baseOptions);
       expect(service.isStringHtml('<div className={styles.a}>x</div>')).toBe(true);
+    });
+  });
+
+  describe('classesOnly option', () => {
+    it('is off by default', () => {
+      expect(convert('<div id="app"><p>x</p></div>', 'css')).toBe('#app {}\n#app p {}\n');
+    });
+
+    it('emits class selectors only', () => {
+      const html =
+        '<main id="app"><section class="hero"><p>x</p><h1 class="hero__title">y</h1></section></main>';
+      expect(convert(html, 'scss', { classesOnly: true })).toBe('.hero {\n  &__title {}\n}\n');
+    });
+
+    it('drops the id but keeps the class of an element that has both', () => {
+      expect(convert('<div id="a" class="b">x</div>', 'css', { classesOnly: true })).toBe(
+        '.b {}\n'
+      );
+    });
+
+    it('overrides hideTags: false', () => {
+      expect(
+        convert('<div class="a"><span>x</span></div>', 'css', {
+          classesOnly: true,
+          hideTags: false,
+        })
+      ).toBe('.a {}\n');
+    });
+
+    it('keeps state stubs for clickable elements', () => {
+      expect(convert('<a class="link">x</a>', 'css', { classesOnly: true })).toBe(
+        '.link {}\n.link:hover {}\n.link:active {}\n.link:focus {}\n'
+      );
+    });
+
+    it('returns nothing for markup without classes', () => {
+      expect(convert('<div id="a"><p>x</p></div>', 'css', { classesOnly: true })).toBe('');
+    });
+  });
+
+  describe('ignoredSelectors option', () => {
+    const html =
+      '<div class="container"><p class="text-center intro">x</p><p>y</p><span id="app">z</span></div>';
+
+    it('is empty by default', () => {
+      expect(convert(html, 'css')).toContain('.container');
+    });
+
+    it("skips ignored classes, keeping the element's other classes", () => {
+      expect(convert(html, 'css', { ignoredSelectors: ['.container', '.text-center'] })).toBe(
+        '.intro {}\np {}\n#app {}\n'
+      );
+    });
+
+    it('skips ignored tags and ids', () => {
+      expect(convert(html, 'css', { ignoredSelectors: ['p', '#app'] })).toBe(
+        '.container {}\n.container .text-center.intro {}\n'
+      );
+    });
+
+    it('accepts a comma-separated entry', () => {
+      expect(convert(html, 'css', { ignoredSelectors: ['.container, .text-center, p'] })).toBe(
+        '.intro {}\n#app {}\n'
+      );
+    });
+
+    it('matches classes as written, before BEM conversion', () => {
+      const bem =
+        '<div class="card"><h2 class="card__title">x</h2><p class="card__text">y</p></div>';
+      expect(convert(bem, 'scss', { ignoredSelectors: ['.card__title'] })).toBe(
+        '.card {\n  &__text {}\n}\n'
+      );
+    });
+
+    it('matches tags case-insensitively', () => {
+      expect(convert('<DIV class="a"><P>x</P></DIV>', 'css', { ignoredSelectors: ['P'] })).toBe(
+        '.a {}\n'
+      );
+    });
+
+    it('ignores entries that are not simple selectors', () => {
+      expect(
+        convert('<div class="a">x</div>', 'css', { ignoredSelectors: ['div > .a', '', '.'] })
+      ).toBe('.a {}\n');
+    });
+
+    it('falls back to an empty list for invalid values', () => {
+      const service = new HtmlConverterService({
+        ignoredSelectors: 'not-an-array' as unknown as string[],
+      });
+      expect(service.convert('<div class="a">x</div>', 'css')).toBe('.a {}\n');
     });
   });
 

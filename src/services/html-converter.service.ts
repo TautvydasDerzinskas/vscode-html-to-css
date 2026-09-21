@@ -32,7 +32,18 @@ const DEFAULT_OPTIONS: IOptions = {
   hideTags: true,
   convertBEM: true,
   preappendHtml: false,
+  classesOnly: false,
+  ignoredSelectors: [],
 };
+
+/** The parsed form of `ignoredSelectors`, split by selector kind. */
+interface IgnoredSelectors {
+  classes: Set<string>;
+  ids: Set<string>;
+  tags: Set<string>;
+}
+
+const TAG_NAME_PATTERN = /^[a-z][\w-]*$/i;
 
 /**
  * Converts an HTML fragment into CSS / LESS / SCSS selector scaffolding.
@@ -45,7 +56,7 @@ class HtmlConverterService {
   }
 
   /**
-   * Replaces the current options. Missing or non-boolean values fall back to defaults.
+   * Replaces the current options. Missing or invalid values fall back to defaults.
    */
   public updateConfiguration(options?: Partial<IOptions>): void {
     this.options = this.normalizeOptions(options);
@@ -74,10 +85,7 @@ class HtmlConverterService {
   public convert(html: string, fileExtension: string): string {
     const isCss = fileExtension.toLowerCase() === 'css';
 
-    let dom = this.parseHtml(html);
-    if (this.options.hideTags) {
-      dom = this.removeTags(dom);
-    }
+    let dom = this.filterSelectors(this.parseHtml(html), this.parseIgnoredSelectors());
     if (this.options.convertBEM && !isCss) {
       dom = this.convertBEM(dom);
     }
@@ -93,13 +101,81 @@ class HtmlConverterService {
   }
 
   private normalizeOptions(options?: Partial<IOptions>): IOptions {
-    const normalized = { ...DEFAULT_OPTIONS };
-    for (const key of Object.keys(DEFAULT_OPTIONS) as (keyof IOptions)[]) {
-      if (typeof options?.[key] === 'boolean') {
-        normalized[key] = options[key] as boolean;
+    const normalized: IOptions = { ...DEFAULT_OPTIONS, ignoredSelectors: [] };
+    const booleanKeys = [
+      'reduceSiblings',
+      'combineParents',
+      'hideTags',
+      'convertBEM',
+      'preappendHtml',
+      'classesOnly',
+    ] as const;
+
+    for (const key of booleanKeys) {
+      const value = options?.[key];
+      if (typeof value === 'boolean') {
+        normalized[key] = value;
       }
     }
+
+    if (Array.isArray(options?.ignoredSelectors)) {
+      normalized.ignoredSelectors = options.ignoredSelectors.filter(
+        (selector): selector is string => typeof selector === 'string'
+      );
+    }
+
     return normalized;
+  }
+
+  /**
+   * Sorts `ignoredSelectors` into classes, ids and tags. Entries may themselves be
+   * comma-separated (`.container, .text-center, p`); anything that is not a simple class,
+   * id or tag selector, such as `div > .a`, is ignored as a whole.
+   */
+  private parseIgnoredSelectors(): IgnoredSelectors {
+    const ignored: IgnoredSelectors = { classes: new Set(), ids: new Set(), tags: new Set() };
+
+    for (const entry of this.options.ignoredSelectors) {
+      for (const selector of entry.split(',').map(part => part.trim())) {
+        if (selector.startsWith('.') && selector.length > 1) {
+          ignored.classes.add(selector.slice(1));
+        } else if (selector.startsWith('#') && selector.length > 1) {
+          ignored.ids.add(selector.slice(1));
+        } else if (TAG_NAME_PATTERN.test(selector)) {
+          ignored.tags.add(selector.toLowerCase());
+        }
+      }
+    }
+
+    return ignored;
+  }
+
+  /**
+   * Removes ignored selectors, and every tag and id in `classesOnly` mode. Runs before any
+   * other transform so the ignore list matches the class names as written in the markup.
+   * It also applies `hideTags`, for the same reason. An element left with nothing to select
+   * on produces no rule; its children move up.
+   * `metaTag` is untouched, so `<a>` and `<button>` keep their state stubs.
+   */
+  private filterSelectors(dom: IDomObject[], ignored: IgnoredSelectors): IDomObject[] {
+    const { classesOnly, hideTags } = this.options;
+
+    return dom.map(element => {
+      // Decided on the markup as written: ignoring `.container` must not turn
+      // `<div class="container">` into a bare `div` rule.
+      const tagHidden =
+        classesOnly ||
+        ignored.tags.has(element.tag) ||
+        (hideTags && (element.classes.length > 0 || element.ids.length > 0));
+
+      return {
+        ...element,
+        tag: tagHidden ? '' : element.tag,
+        ids: classesOnly ? [] : element.ids.filter(id => !ignored.ids.has(id)),
+        classes: element.classes.filter(className => !ignored.classes.has(className)),
+        children: this.filterSelectors(element.children, ignored),
+      };
+    });
   }
 
   private parseHtml(html: string): IDomObject[] {
@@ -146,18 +222,6 @@ class HtmlConverterService {
   /** Drops empty tokens and any token whose value depends on a template expression. */
   private filterTokens(tokens: string[]): string[] {
     return tokens.filter(token => token && !token.includes(DYNAMIC_VALUE_MARKER));
-  }
-
-  /**
-   * Drops the tag from any element that already has a class or an id, so the selector
-   * stays as unspecific as possible. `metaTag` keeps the original tag for state stubs.
-   */
-  private removeTags(dom: IDomObject[]): IDomObject[] {
-    return dom.map(element => ({
-      ...element,
-      tag: element.classes.length || element.ids.length ? '' : element.tag,
-      children: this.removeTags(element.children),
-    }));
   }
 
   /**

@@ -141,6 +141,19 @@
           "type": "boolean",
           "default": false,
           "description": "Pre-append comment containing transformed html structure."
+        },
+        "htmlToCss.classesOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "Generate class selectors only. Tag and id selectors are never emitted; elements without a class are skipped and their children move up."
+        },
+        "htmlToCss.ignoredSelectors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Selectors that are never generated, such as utility classes. Supports class (`.container`), id (`#app`) and tag (`p`) selectors, e.g. `[\".container\", \".text-center\", \"p\"]`."
         }
       }
     }

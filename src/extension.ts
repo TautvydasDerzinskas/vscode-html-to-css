@@ -27,6 +27,8 @@ function readOptions(scope: vscode.Uri | undefined): IOptions {
     hideTags: configuration.get('hideTags', true),
     convertBEM: configuration.get('convertBEM', true),
     preappendHtml: configuration.get('preappendHtml', false),
+    classesOnly: configuration.get('classesOnly', false),
+    ignoredSelectors: configuration.get<string[]>('ignoredSelectors', []),
   };
 }
 

@@ -184,13 +184,57 @@ and the `{{ ... }}` half covers **Vue** and **Angular** templates.
 
 ## Settings
 
-| Setting                    | Default | Description                                                                              |
-| -------------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| `htmlToCss.hideTags`       | `true`  | Drop the tag name when an element already has a class or an id, keeping specificity low. |
-| `htmlToCss.convertBEM`     | `true`  | Fold BEM elements and modifiers into `&__element` / `&--modifier`. Nested output only.   |
-| `htmlToCss.reduceSiblings` | `true`  | Collapse duplicate sibling elements that produce the same selector.                      |
-| `htmlToCss.combineParents` | `true`  | Merge duplicate sibling elements that have children, combining their children.           |
-| `htmlToCss.preappendHtml`  | `false` | Prepend the source markup as a comment above the generated selectors.                    |
+| Setting                      | Default | Description                                                                                   |
+| ---------------------------- | ------- | --------------------------------------------------------------------------------------------- |
+| `htmlToCss.hideTags`         | `true`  | Drop the tag name when an element already has a class or an id, keeping specificity low.      |
+| `htmlToCss.convertBEM`       | `true`  | Fold BEM elements and modifiers into `&__element` / `&--modifier`. Nested output only.        |
+| `htmlToCss.reduceSiblings`   | `true`  | Collapse duplicate sibling elements that produce the same selector.                           |
+| `htmlToCss.combineParents`   | `true`  | Merge duplicate sibling elements that have children, combining their children.                |
+| `htmlToCss.preappendHtml`    | `false` | Prepend the source markup as a comment above the generated selectors.                         |
+| `htmlToCss.classesOnly`      | `false` | Generate class selectors only — no tag or id selectors. Elements without a class are skipped. |
+| `htmlToCss.ignoredSelectors` | `[]`    | Selectors never to generate, e.g. `[".container", ".text-center", "p"]`.                      |
+
+### Class-only output and ignored selectors
+
+If you write your styles with classes only, turn on `classesOnly`: tag and id selectors are
+never generated, and elements without a class are skipped (their children move up a level).
+
+`ignoredSelectors` stops specific selectors from ever being generated — handy for layout or
+utility classes you never style per component:
+
+```json
+{
+  "htmlToCss.classesOnly": true,
+  "htmlToCss.ignoredSelectors": [".container", ".text-center", "p"]
+}
+```
+
+With those settings, this markup:
+
+```html
+<main id="app">
+  <div class="container">
+    <section class="hero">
+      <h1 class="hero__title text-center">Title</h1>
+      <p>Intro</p>
+    </section>
+  </div>
+</main>
+```
+
+gives you just:
+
+```scss
+.hero {
+  &__title {
+  }
+}
+```
+
+Entries can be class (`.container`), id (`#app`) or tag (`p`) selectors, and one entry may hold
+several, separated by commas. Classes are matched as written in the markup, before BEM
+conversion, so ignore `.card__title` rather than `&__title`. An element whose only class is
+ignored produces no rule — it does not fall back to a bare tag selector.
 
 `hideTags` keeps track of the original tag internally, so state stubs are still generated
 for `<a>` and `<button>` even when their tag name is hidden.
