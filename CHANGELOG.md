@@ -1,3 +1,10 @@
+## [1.4.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.3.0...v1.4.0) (2026-09-21)
+
+### Features
+
+* add support for JSX ([92783b1](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/92783b13462b3fe0e6e4eb30af91b4ce0cb69208))
+* add template markup support ([a81139f](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/a81139faa24ef71e013b33be5350422099e4cb49))
+
 ## [1.3.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.2.0...v1.3.0) (2026-09-21)
 
 ### Features
