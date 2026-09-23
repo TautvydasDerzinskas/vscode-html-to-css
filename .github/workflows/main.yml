@@ -53,6 +53,30 @@ jobs:
           path: vscode-html-to-css.vsix
           if-no-files-found: error
 
+      - name: Build website
+        run: npm run web:build
+
+      - name: Upload website
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist
+
+  website:
+    name: Deploy website
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
   release:
     name: Release
     needs: verify

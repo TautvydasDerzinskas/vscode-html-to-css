@@ -60,6 +60,10 @@ module.exports = {
     {
       name: 'dependencies',
     },
+    {
+      // The website never triggers an extension release (see releaseRules in package.json).
+      name: 'web',
+    },
   ],
 
   // it needs to match the value for field type. Eg.: 'feat'

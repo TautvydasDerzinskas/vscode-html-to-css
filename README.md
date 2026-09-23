@@ -4,6 +4,9 @@ A Visual Studio Code extension that turns HTML, JSX or template markup on your c
 ready-to-fill CSS, LESS or SCSS selectors. Works with plain HTML, React and Next.js, and Twig
 and friends.
 
+Prefer the browser? The same converter runs online at
+[tautvydasderzinskas.github.io/vscode-html-to-css](https://tautvydasderzinskas.github.io/vscode-html-to-css/).
+
 ## Usage
 
 1. Copy some HTML, JSX or template markup to the clipboard.
@@ -245,6 +248,11 @@ and `noscript` — are skipped. A `<template>` wrapper, such as a Vue single-fil
 ## Contributing
 
 Contributions are welcome. Please open a pull request.
+
+The website lives in [`web/`](web/) and bundles the extension's converter. Its options form is
+generated from `contributes.configuration` in `package.json`, so new settings show up there
+automatically. Run `npm run web:serve` to work on it locally, or `npm run web:build` to build
+it into `web/dist`. CI deploys it to GitHub Pages on every push to `main`.
 
 ## License
 

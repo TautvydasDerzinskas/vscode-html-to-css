@@ -19,7 +19,13 @@
   },
   "overrides": [
     {
-      "files": ["esbuild.mjs"],
+      "files": ["web/**"],
+      "env": {
+        "browser": true
+      }
+    },
+    {
+      "files": ["esbuild.mjs", "web/build.mjs"],
       "rules": {
         "no-console": "off"
       }

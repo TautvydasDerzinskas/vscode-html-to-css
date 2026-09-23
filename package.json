@@ -40,12 +40,14 @@
     "vscode:prepublish": "npm run build",
     "build": "node esbuild.mjs --production",
     "watch": "node esbuild.mjs --watch",
-    "typecheck": "tsc --noEmit -p ./tsconfig.json",
+    "typecheck": "tsc --noEmit -p ./tsconfig.json && tsc --noEmit -p ./web/tsconfig.json",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "web:build": "node web/build.mjs",
+    "web:serve": "node web/build.mjs --serve",
     "package": "vsce package",
     "commit": "cz",
     "semantic-release": "semantic-release",
@@ -174,7 +176,13 @@
       [
         "@semantic-release/commit-analyzer",
         {
-          "preset": "conventionalcommits"
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "scope": "web",
+              "release": false
+            }
+          ]
         }
       ],
       [

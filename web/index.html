@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      HTML to CSS, SCSS &amp; LESS Converter – JSX, React, Vue &amp; Twig to CSS Selectors
+    </title>
+    <meta
+      name="description"
+      content="Free online HTML to CSS converter. Paste HTML, JSX/React, Vue, Twig, Jinja, Liquid or Handlebars markup and instantly generate CSS, SCSS, Sass or LESS selectors with BEM nesting."
+    />
+    <meta
+      name="keywords"
+      content="html to css, html to scss, html to less, html to sass, jsx to css, react to css, tsx to css, vue to css, vue to scss, twig to css, twig to scss, jinja to css, nunjucks to css, liquid to css, handlebars to css, mustache to css, angular to css, css selector generator, scss generator, bem css generator, extract css classes from html, html class to css"
+    />
+    <meta name="author" content="Tautvydas Derzinskas" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#313944" />
+    <link rel="canonical" href="{{SITE_URL}}" />
+    <link rel="icon" type="image/png" href="images/icon.png" />
+    <link rel="apple-touch-icon" href="images/icon.png" />
+    <link rel="sitemap" type="application/xml" href="sitemap.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HTML to CSS / LESS / SCSS" />
+    <meta property="og:title" content="HTML to CSS, SCSS &amp; LESS Converter" />
+    <meta
+      property="og:description"
+      content="Turn HTML, JSX, Vue or Twig markup into ready-to-fill CSS, SCSS or LESS selectors. Runs entirely in your browser."
+    />
+    <meta property="og:url" content="{{SITE_URL}}" />
+    <meta property="og:image" content="{{SITE_URL}}images/preview.gif" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="626" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HTML to CSS, SCSS &amp; LESS Converter" />
+    <meta
+      name="twitter:description"
+      content="Turn HTML, JSX, Vue or Twig markup into ready-to-fill CSS, SCSS or LESS selectors."
+    />
+    <meta name="twitter:image" content="{{SITE_URL}}images/preview.gif" />
+
+    <script>
+      document.documentElement.classList.add('js');
+    </script>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="app.js"></script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "HTML to CSS / LESS / SCSS Converter",
+        "url": "{{SITE_URL}}",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "description": "Converts HTML, JSX/React, Vue, Twig, Jinja, Nunjucks, Liquid and Handlebars markup into CSS, SCSS, Sass or LESS selectors.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": {
+          "@type": "Person",
+          "name": "Tautvydas Derzinskas",
+          "url": "https://www.tautvydas.info"
+        },
+        "sameAs": [
+          "https://marketplace.visualstudio.com/items?itemName=tautvydasderzinskas.vscode-html-to-css",
+          "https://open-vsx.org/extension/tautvydasderzinskas/vscode-html-to-css",
+          "https://github.com/TautvydasDerzinskas/vscode-html-to-css"
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I convert HTML to CSS selectors?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Paste your HTML into the input box, pick CSS, SCSS or LESS as the output format and press Convert. Every class, id and tag in the markup becomes an empty rule, nested to match the HTML structure."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I convert JSX or React components to CSS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. className, CSS-modules lookups such as styles.card, template literals and clsx/classnames calls are all understood. Component tags, event handlers and inline styles are ignored."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work with Twig, Jinja, Nunjucks, Liquid, Handlebars or Vue templates?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Template tags, comments and expressions are stripped before the markup is read. Classes written inside {% if %} blocks are kept; classes built from an expression are dropped because their value is only known at render time."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it understand BEM?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. In SCSS and LESS output, BEM elements and modifiers are folded into &__element and &--modifier selectors. The option can be turned off."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my code uploaded anywhere?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The conversion runs entirely in your browser. Nothing you paste is sent to a server."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a VS Code extension?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The same converter is available as the HTML to CSS / LESS / SCSS extension for Visual Studio Code, on the VS Code Marketplace and Open VSX. Copy markup and press Ctrl+Alt+V (Cmd+Alt+V on macOS) in a stylesheet."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#converter">Skip to the converter</a>
+
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="brand" href="./">
+          <img src="images/icon.png" alt="" width="32" height="32" />
+          <span>HTML to CSS</span>
+        </a>
+        <nav class="site-nav" aria-label="Main">
+          <a href="#supported">Supported markup</a>
+          <a href="#faq">FAQ</a>
+          <a href="#vscode">VS Code extension</a>
+          <a href="https://github.com/TautvydasDerzinskas/vscode-html-to-css" rel="noopener"
+            >GitHub</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero container">
+        <h1>HTML to CSS, SCSS &amp; LESS converter</h1>
+        <p class="hero__lead">
+          Paste HTML, JSX / React, Vue, Twig or any other template markup and get ready-to-fill CSS,
+          SCSS, Sass or LESS selectors, nested to match your markup, with BEM folded into
+          <code>&amp;__element</code> and <code>&amp;--modifier</code>. Everything runs in your
+          browser.
+        </p>
+      </section>
+
+      <form id="converter" class="app container" autocomplete="off">
+        <aside class="sidebar" aria-labelledby="settings-heading">
+          <h2 id="settings-heading" class="sidebar__heading">Settings</h2>
+
+          <fieldset class="field-group">
+            <legend class="field-group__legend">Output format</legend>
+            <div class="segmented">{{FORMATS}}</div>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend class="field-group__legend">Options</legend>
+            {{OPTIONS}}
+          </fieldset>
+        </aside>
+
+        <div class="workspace">
+          <div class="examples">
+            <span class="examples__label">Try an example:</span>
+            {{EXAMPLE_BUTTONS}}
+          </div>
+
+          <div class="panes">
+            <div class="pane">
+              <div class="pane__header">
+                <label for="input" class="pane__title">HTML, JSX or template markup</label>
+                <button type="button" id="clear" class="link-button">Clear</button>
+              </div>
+              <textarea
+                id="input"
+                class="code"
+                spellcheck="false"
+                autocapitalize="off"
+                placeholder="Paste your HTML, JSX, Vue, Twig or Handlebars markup here…"
+              >
+{{EXAMPLE_INPUT}}</textarea>
+            </div>
+
+            <div class="pane">
+              <div class="pane__header">
+                <label for="output" class="pane__title"
+                  >Generated <span id="output-format">SCSS</span></label
+                >
+                <button type="button" id="copy" class="link-button">Copy</button>
+              </div>
+              <textarea id="output" class="code" spellcheck="false" readonly>
+{{EXAMPLE_OUTPUT}}</textarea>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="convert-button">Convert</button>
+            <p id="status" class="status" role="status" aria-live="polite"></p>
+            <p class="shortcut-hint">or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in the input</p>
+          </div>
+          <noscript>
+            <p class="status" data-tone="warning">
+              JavaScript is needed to convert your own markup. The example above shows what the
+              converter produces.
+            </p>
+          </noscript>
+        </div>
+      </form>
+
+      <section class="content container" aria-labelledby="how-heading">
+        <h2 id="how-heading">How the HTML to CSS converter works</h2>
+        <ol class="steps">
+          <li>
+            <h3>Paste your markup</h3>
+            <p>
+              Plain HTML, a React / Next.js component, a Vue single-file component template or a
+              Twig, Jinja or Handlebars block. Template syntax is stripped for you.
+            </p>
+          </li>
+          <li>
+            <h3>Pick an output format</h3>
+            <p>
+              <strong>CSS</strong> gives flat descendant selectors. <strong>SCSS / Sass</strong> and
+              <strong>LESS</strong> give nested rules that mirror the HTML tree.
+            </p>
+          </li>
+          <li>
+            <h3>Convert and fill in</h3>
+            <p>
+              Every class, id and tag becomes an empty rule, links and buttons get
+              <code>:hover</code>, <code>:active</code> and <code>:focus</code> stubs, and duplicate
+              siblings are merged. Copy the result into your stylesheet.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section id="supported" class="content container" aria-labelledby="supported-heading">
+        <h2 id="supported-heading">Supported markup and template languages</h2>
+        <div class="cards">
+          <article class="card">
+            <h3>HTML to CSS</h3>
+            <p>
+              Any HTML fragment or full page. Elements that never render, such as
+              <code>script</code>, <code>style</code> and <code>meta</code>, are skipped.
+            </p>
+          </article>
+          <article class="card">
+            <h3>JSX, React &amp; Next.js to CSS</h3>
+            <p>
+              <code>className</code> strings, CSS modules (<code>styles.card</code>), template
+              literals and <code>clsx</code> / <code>classnames</code> calls in
+              <code>.jsx</code> and <code>.tsx</code> files. Components never become selectors.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Vue &amp; Angular to CSS</h3>
+            <p>
+              Paste a whole <code>&lt;template&gt;</code>: the wrapper is dropped, and
+              <code>{{ … }}</code> interpolations and bound attributes are ignored.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Twig, Jinja2 &amp; Nunjucks to CSS</h3>
+            <p>
+              <code>{% … %}</code> statements, <code>{# … #}</code> comments and
+              <code>{{ … }}</code> expressions are removed. Classes inside
+              <code>{% if %}</code> blocks are kept.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Liquid, Handlebars &amp; Mustache to CSS</h3>
+            <p>
+              Shopify Liquid templates and Handlebars / Mustache block helpers such as
+              <code>{{#each}}</code> and <code>{{#if}}</code> are handled the same way.
+            </p>
+          </article>
+          <article class="card">
+            <h3>BEM to SCSS &amp; LESS</h3>
+            <p>
+              <code>block__element</code> and <code>block--modifier</code> classes are nested as
+              <code>&amp;__element</code> and <code>&amp;--modifier</code>, so the generated SCSS
+              compiles back to the class names in your markup.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="vscode" class="content container promo" aria-labelledby="vscode-heading">
+        <div class="promo__text">
+          <h2 id="vscode-heading">Use it inside VS Code</h2>
+          <p>
+            This page runs the same converter as the
+            <strong>HTML to CSS / LESS / SCSS</strong> extension for Visual Studio Code. Copy
+            markup, open a <code>.css</code>, <code>.scss</code>, <code>.sass</code> or
+            <code>.less</code> file and press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>V</kbd> (<kbd
+              >Cmd</kbd
+            >
+            + <kbd>Alt</kbd> + <kbd>V</kbd> on macOS) to paste it as selectors. Every option in the
+            sidebar is also an extension setting.
+          </p>
+          <p class="promo__links">
+            <a
+              class="button"
+              href="https://marketplace.visualstudio.com/items?itemName=tautvydasderzinskas.vscode-html-to-css"
+              rel="noopener"
+              >VS Code Marketplace</a
+            >
+            <a
+              class="button button--secondary"
+              href="https://open-vsx.org/extension/tautvydasderzinskas/vscode-html-to-css"
+              rel="noopener"
+              >Open VSX</a
+            >
+          </p>
+        </div>
+        <img
+          class="promo__image"
+          src="images/preview.gif"
+          alt="The HTML to CSS extension pasting HTML as SCSS selectors in VS Code"
+          width="1200"
+          height="626"
+          loading="lazy"
+          decoding="async"
+        />
+      </section>
+
+      <section id="faq" class="content container" aria-labelledby="faq-heading">
+        <h2 id="faq-heading">Frequently asked questions</h2>
+        <div class="faq">
+          <details>
+            <summary>How do I convert HTML to CSS selectors?</summary>
+            <p>
+              Paste your HTML into the input box, pick CSS, SCSS or LESS as the output format and
+              press <strong>Convert</strong>. Every class, id and tag in the markup becomes an empty
+              rule, nested to match the HTML structure.
+            </p>
+          </details>
+          <details>
+            <summary>Can I convert JSX or React components to CSS?</summary>
+            <p>
+              Yes. <code>className</code>, CSS-modules lookups such as <code>styles.card</code>,
+              template literals and <code>clsx</code> / <code>classnames</code> calls are all
+              understood. Component tags, event handlers and inline styles are ignored. A ternary
+              keeps only its first branch, and class names that are only known at runtime are
+              dropped rather than guessed.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Does it work with Twig, Jinja, Nunjucks, Liquid, Handlebars or Vue templates?
+            </summary>
+            <p>
+              Yes. Template tags, comments and expressions are stripped before the markup is read.
+              Classes written inside <code>{% if %}</code> blocks are kept; classes built from an
+              expression, like <code>card--{{ type }}</code>, are dropped because their value is
+              only known at render time.
+            </p>
+          </details>
+          <details>
+            <summary>Does it understand BEM?</summary>
+            <p>
+              Yes. In SCSS and LESS output, BEM elements and modifiers are folded into
+              <code>&amp;__element</code> and <code>&amp;--modifier</code> selectors. Turn off
+              <em>Convert BEM</em> in the sidebar to keep full class names.
+            </p>
+          </details>
+          <details>
+            <summary>What is the difference between SCSS, Sass and LESS output?</summary>
+            <p>
+              SCSS and LESS share the same nested syntax for selectors, so the output works in
+              <code>.scss</code>, <code>.less</code> and Sass projects using SCSS syntax. CSS output
+              uses flat descendant selectors instead of nesting.
+            </p>
+          </details>
+          <details>
+            <summary>Is my code uploaded anywhere?</summary>
+            <p>
+              No. The conversion runs entirely in your browser. Nothing you paste is sent to a
+              server.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p>
+          Made by
+          <a href="https://www.tautvydas.info" rel="noopener">Tautvydas Derzinskas</a>. Open source
+          under the MIT license.
+        </p>
+        <p>
+          <a href="https://github.com/TautvydasDerzinskas/vscode-html-to-css" rel="noopener"
+            >Source &amp; issues</a
+          >
+          ·
+          <a href="https://github.com/sponsors/TautvydasDerzinskas" rel="noopener">Sponsor</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
