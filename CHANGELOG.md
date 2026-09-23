@@ -1,3 +1,13 @@
+## [1.5.2](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.5.1...v1.5.2) (2026-09-23)
+
+### Features
+
+* **web:** add website ([243c849](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/243c84949d887c91d62cdf67fac815f08d908026))
+
+### Bug Fixes
+
+* add website link to listing ([12d5ef5](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/12d5ef54b27401d1d7153e4883ea59c8f12d4548))
+
 ## [1.5.1](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.5.0...v1.5.1) (2026-09-21)
 
 ### Bug Fixes
