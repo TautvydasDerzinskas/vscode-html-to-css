@@ -1,5 +1,9 @@
 # HTML to CSS / LESS / SCSS
 
+<p align="center">
+  <a href="https://tautvydasderzinskas.github.io/vscode-html-to-css/"><img src="https://img.shields.io/badge/Try_it_online-HTML_to_CSS_converter-16a34a?style=for-the-badge" alt="Try it online: HTML to CSS converter"></a>
+</p>
+
 A Visual Studio Code extension that turns HTML, JSX or template markup on your clipboard into
 ready-to-fill CSS, LESS or SCSS selectors. Works with plain HTML, React and Next.js, and Twig
 and friends.
