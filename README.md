@@ -16,9 +16,35 @@ Prefer the browser? The same converter runs online at
 1. Copy some HTML, JSX or template markup to the clipboard.
 2. Open a `.css`, `.less`, `.scss` or `.sass` file.
 3. Press `Ctrl+Alt+V` (Windows/Linux) or `Cmd+Alt+V` (macOS), or pick
-   **Paste HTML converted to CSS / LESS / SCSS** from the editor context menu.
+   **Paste HTML as Selectors (Match File Type)** from the editor context menu.
 
 The selectors are inserted at the cursor. If you have text selected, it is replaced.
+
+### Pasting into any file
+
+The editor context menu (and the Command Palette, under **HTML to CSS**) has three paste
+commands:
+
+| Command                                        | Output                                  | Works in                                |
+| ---------------------------------------------- | --------------------------------------- | --------------------------------------- |
+| **Paste HTML as Selectors (Match File Type)**  | CSS or nested SCSS / LESS, by file type | `.css`, `.less`, `.scss`, `.sass` files |
+| **Paste HTML as CSS Selectors**                | Flat CSS                                | Any file                                |
+| **Paste HTML as Nested SCSS / LESS Selectors** | Nested SCSS / LESS                      | Any file                                |
+
+The last two are handy for a Vue or Svelte `<style>` block, a styled-components template, a
+markdown note or an untitled buffer. In the context menu, the paste commands only appear once
+the clipboard holds HTML that converts to at least one selector, and the first one only in
+stylesheets. The keyboard shortcut and Command Palette are always available, and explain what
+is wrong if there is nothing to paste.
+
+### Copying from a selection
+
+Select some HTML, JSX or template markup in any file, right-click and pick
+**Copy as CSS Selectors** or **Copy as Nested SCSS / LESS Selectors**, right below the
+built-in Copy. The converted selectors go to the clipboard, ready to paste anywhere with a
+normal `Ctrl+V` / `Cmd+V`. The document itself is not changed, and several selections are
+converted together. Both entries only appear when the selection holds HTML that converts to
+at least one selector with your current settings.
 
 ## Examples
 

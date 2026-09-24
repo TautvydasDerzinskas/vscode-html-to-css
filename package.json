@@ -91,12 +91,40 @@
     "Formatters"
   ],
   "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
       {
         "command": "htmlToCss.paste",
-        "title": "Paste HTML converted to CSS / LESS / SCSS",
-        "category": "HTML to CSS"
+        "title": "Paste HTML as Selectors (Match File Type)",
+        "category": "HTML to CSS",
+        "enablement": "!editorReadOnly && (editorLangId =~ /^(css|postcss|less|scss|sass)$/ || resourceExtname =~ /^\\.(css|less|scss|sass)$/i)"
+      },
+      {
+        "command": "htmlToCss.pasteAsCss",
+        "title": "Paste HTML as CSS Selectors",
+        "category": "HTML to CSS",
+        "enablement": "!editorReadOnly"
+      },
+      {
+        "command": "htmlToCss.pasteAsNested",
+        "title": "Paste HTML as Nested SCSS / LESS Selectors",
+        "category": "HTML to CSS",
+        "enablement": "!editorReadOnly"
+      },
+      {
+        "command": "htmlToCss.copyAsCss",
+        "title": "Copy as CSS Selectors",
+        "category": "HTML to CSS",
+        "enablement": "htmlToCss.selectionHasHtml"
+      },
+      {
+        "command": "htmlToCss.copyAsNested",
+        "title": "Copy as Nested SCSS / LESS Selectors",
+        "category": "HTML to CSS",
+        "enablement": "htmlToCss.selectionHasHtml"
       }
     ],
     "keybindings": [
@@ -110,8 +138,29 @@
     "menus": {
       "editor/context": [
         {
+          "command": "htmlToCss.copyAsCss",
+          "when": "htmlToCss.selectionHasHtml",
+          "group": "9_cutcopypaste@2.1"
+        },
+        {
+          "command": "htmlToCss.copyAsNested",
+          "when": "htmlToCss.selectionHasHtml",
+          "group": "9_cutcopypaste@2.2"
+        },
+        {
           "command": "htmlToCss.paste",
+          "when": "htmlToCss.clipboardHasHtml && (editorLangId =~ /^(css|postcss|less|scss|sass)$/ || resourceExtname =~ /^\\.(css|less|scss|sass)$/i)",
           "group": "htmlToCss@1"
+        },
+        {
+          "command": "htmlToCss.pasteAsCss",
+          "when": "htmlToCss.clipboardHasHtml",
+          "group": "htmlToCss@2"
+        },
+        {
+          "command": "htmlToCss.pasteAsNested",
+          "when": "htmlToCss.clipboardHasHtml",
+          "group": "htmlToCss@3"
         }
       ]
     },
