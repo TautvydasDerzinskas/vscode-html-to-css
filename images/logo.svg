@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="HTML ↔ CSS converter">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#020617" flood-opacity="0.35"/>
+    </filter>
+
+    <!-- Electric cyan → deep indigo -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="45%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+
+    <!-- Soft highlight -->
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.25"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded app icon base -->
+  <g filter="url(#shadow)">
+    <rect x="20" y="20" width="216" height="216" rx="52" ry="52" fill="url(#bg)"/>
+    <rect x="20" y="20" width="216" height="108" rx="52" ry="52" fill="url(#shine)"/>
+  </g>
+
+  <!-- Cool geometric mark: interlocking chevrons / swap symbol -->
+  <!-- Represents transformation / bidirectional conversion -->
+
+  <!-- Outer ring -->
+  <circle cx="128" cy="128" r="62" fill="none" stroke="#FFFFFF" stroke-width="10" opacity="0.2"/>
+
+  <!-- Main mark: two bold interlocking arrows forming a continuous loop -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top-right going arrow (markup → styles) -->
+    <path d="M 86 108
+             L 128 78
+             L 170 108"/>
+    <path d="M 128 78 L 128 128"/>
+
+    <!-- Bottom-left returning arrow (styles → markup) -->
+    <path d="M 170 148
+             L 128 178
+             L 86 148"/>
+    <path d="M 128 178 L 128 128"/>
+  </g>
+
+  <!-- Center node -->
+  <circle cx="128" cy="128" r="12" fill="#FFFFFF"/>
+</svg>

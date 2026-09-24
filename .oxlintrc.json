@@ -25,7 +25,7 @@
       }
     },
     {
-      "files": ["esbuild.mjs", "web/build.mjs"],
+      "files": ["esbuild.mjs", "web/build.mjs", "scripts/**"],
       "rules": {
         "no-console": "off"
       }

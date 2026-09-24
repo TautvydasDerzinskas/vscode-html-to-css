@@ -4,14 +4,14 @@
   "description": "Turn HTML, JSX/React, Vue or Twig markup into CSS / LESS / SCSS selectors, and CSS / SCSS / LESS back into HTML or JSX",
   "version": "1.7.0",
   "publisher": "tautvydasderzinskas",
-  "icon": "images/html2css_transparent.png",
+  "icon": "images/icon.png",
   "author": {
     "name": "Tautvydas Derzinskas",
     "email": "tautvydasuk@gmail.com",
-    "url": "https://www.tautvydas.info"
+    "url": "https://github.com/TautvydasDerzinskas"
   },
   "galleryBanner": {
-    "color": "#313944",
+    "color": "#1e1b4b",
     "theme": "dark"
   },
   "keywords": [
@@ -51,6 +51,7 @@
     "test:watch": "vitest",
     "web:build": "node web/build.mjs",
     "web:serve": "node web/build.mjs --serve",
+    "images": "node scripts/generate-images.mjs",
     "package": "vsce package",
     "commit": "cz",
     "semantic-release": "semantic-release",
@@ -81,6 +82,7 @@
     "typescript": "^7.0.2",
     "vitest": "^4.1.11"
   },
+  "homepage": "https://tautvydasderzinskas.github.io/vscode-html-to-css/",
   "repository": {
     "type": "git",
     "url": "https://github.com/TautvydasDerzinskas/vscode-html-to-css.git"

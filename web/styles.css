@@ -1,12 +1,18 @@
 :root {
-  --bg: #f5f6f8;
+  --bg: #f5f6fb;
   --surface: #ffffff;
-  --surface-muted: #eef0f3;
-  --border: #d9dde3;
-  --text: #1d232b;
-  --text-muted: #5b6573;
-  --accent: #313944;
-  --link: #1f6feb;
+  --surface-muted: #eef0f8;
+  --border: #d9dcea;
+  --text: #1b1f33;
+  --text-muted: #5a6180;
+  /* Brand colours, taken from the logo. */
+  --accent: #1e1b4b;
+  --accent-end: #312e81;
+  --brand: #4f46e5;
+  --brand-hover: #4338ca;
+  --brand-gradient: linear-gradient(135deg, #22d3ee 0%, #6366f1 45%, #4f46e5 100%);
+  --nav-text: #c7d2fe;
+  --link: #4f46e5;
   --green: #16a34a;
   --green-hover: #15803d;
   --green-text: #ffffff;
@@ -21,19 +27,23 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #15191f;
-    --surface: #1d232b;
-    --surface-muted: #262d37;
-    --border: #353e4a;
-    --text: #e6e9ee;
-    --text-muted: #9aa4b2;
-    --accent: #313944;
-    --link: #6cb6ff;
+    --bg: #0c0e1f;
+    --surface: #14172e;
+    --surface-muted: #1d2142;
+    --border: #2c3160;
+    --text: #e7e9f7;
+    --text-muted: #9ca3c7;
+    --accent: #1e1b4b;
+    --accent-end: #312e81;
+    /* Fills keep the deeper indigo so white text on them stays readable. */
+    --brand: #4f46e5;
+    --brand-hover: #5b53f0;
+    --link: #a5b4fc;
     --green: #22a353;
     --green-hover: #2cbc62;
     --warning: #e3a33b;
     --error: #ff7b72;
-    --code-bg: #171b21;
+    --code-bg: #0f1226;
     color-scheme: dark;
   }
 }
@@ -110,7 +120,7 @@ h3 {
 /* Header & footer */
 
 .site-header {
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent), var(--accent-end));
   color: #fff;
 }
 
@@ -141,7 +151,7 @@ h3 {
 }
 
 .site-nav a {
-  color: #d5dbe3;
+  color: var(--nav-text);
   text-decoration: none;
   font-size: 0.9375rem;
 }
@@ -335,7 +345,7 @@ h3 {
 }
 
 .toggle input:checked + .toggle__track {
-  background: var(--green);
+  background: var(--brand);
 }
 
 .toggle input:checked + .toggle__track::after {
@@ -387,7 +397,7 @@ h3 {
 }
 
 .chip:hover {
-  border-color: var(--text-muted);
+  border-color: var(--brand);
 }
 
 /* The examples, Convert button and pane actions need JavaScript. */
@@ -438,8 +448,8 @@ html:not(.js) .pane-switch {
 }
 
 .switch-button:hover {
-  border-color: var(--green);
-  color: var(--green);
+  border-color: var(--link);
+  color: var(--link);
 }
 
 .switch-button:active {
@@ -613,7 +623,7 @@ html:not(.js) .pane-switch {
   height: 28px;
   margin-bottom: 8px;
   border-radius: 50%;
-  background: var(--green);
+  background: var(--brand-gradient);
   color: #fff;
   font-weight: 700;
 }
@@ -659,7 +669,7 @@ html:not(.js) .pane-switch {
 }
 
 .promo__list li::marker {
-  color: var(--green);
+  color: var(--brand);
 }
 
 .promo__links {
@@ -679,16 +689,25 @@ html:not(.js) .pane-switch {
   display: inline-block;
   padding: 9px 18px;
   border-radius: 8px;
-  background: var(--accent);
+  background: var(--brand);
   color: #fff;
   font-weight: 600;
   text-decoration: none;
 }
 
-.button--secondary {
+.button:hover {
+  background: var(--brand-hover);
+}
+
+.button--secondary,
+.button--secondary:hover {
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
+}
+
+.button--secondary:hover {
+  border-color: var(--brand);
 }
 
 .faq {

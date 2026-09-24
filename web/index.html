@@ -15,10 +15,11 @@
     <meta name="author" content="Tautvydas Derzinskas" />
     <meta name="robots" content="index, follow" />
     <meta name="google-site-verification" content="y4GVVvIBxmNQEKnAO3zzxa-eARxy0kimDkY0uIiSyHc" />
-    <meta name="theme-color" content="#313944" />
+    <meta name="theme-color" content="#1e1b4b" />
     <link rel="canonical" href="{{SITE_URL}}" />
-    <link rel="icon" type="image/png" href="images/icon.png" />
-    <link rel="apple-touch-icon" href="images/icon.png" />
+    <link rel="icon" href="favicon.ico" sizes="48x48" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="sitemap" type="application/xml" href="sitemap.xml" />
 
     <meta property="og:type" content="website" />
@@ -29,16 +30,21 @@
       content="Turn HTML, JSX, Vue or Twig markup into ready-to-fill CSS, SCSS or LESS selectors, or CSS back into HTML. Runs entirely in your browser."
     />
     <meta property="og:url" content="{{SITE_URL}}" />
-    <meta property="og:image" content="{{SITE_URL}}images/preview.gif" />
+    <meta property="og:image" content="{{SITE_URL}}og-image.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="626" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="HTML to CSS, SCSS and LESS converter: HTML markup turned into nested SCSS and back"
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="HTML to CSS, SCSS &amp; LESS Converter" />
     <meta
       name="twitter:description"
       content="Turn HTML, JSX, Vue or Twig markup into ready-to-fill CSS, SCSS or LESS selectors, or CSS back into HTML."
     />
-    <meta name="twitter:image" content="{{SITE_URL}}images/preview.gif" />
+    <meta name="twitter:image" content="{{SITE_URL}}og-image.png" />
 
     <script>
       document.documentElement.classList.add('js');
@@ -60,7 +66,7 @@
         "author": {
           "@type": "Person",
           "name": "Tautvydas Derzinskas",
-          "url": "https://www.tautvydas.info"
+          "url": "https://github.com/TautvydasDerzinskas"
         },
         "sameAs": [
           "https://marketplace.visualstudio.com/items?itemName=tautvydasderzinskas.vscode-html-to-css",
@@ -140,7 +146,7 @@
     <header class="site-header">
       <div class="container site-header__inner">
         <a class="brand" href="./">
-          <img src="images/icon.png" alt="" width="32" height="32" />
+          <img src="favicon.svg" alt="" width="32" height="32" />
           <span>HTML to CSS</span>
         </a>
         <nav class="site-nav" aria-label="Main">
@@ -516,8 +522,9 @@
       <div class="container site-footer__inner">
         <p>
           Made by
-          <a href="https://www.tautvydas.info" rel="noopener">Tautvydas Derzinskas</a>. Open source
-          under the MIT license.
+          <a href="https://github.com/TautvydasDerzinskas?tab=repositories" rel="noopener"
+            >Tautvydas Derzinskas</a
+          >. Open source under the MIT license.
         </p>
         <p>
           <a href="https://github.com/TautvydasDerzinskas/vscode-html-to-css" rel="noopener"

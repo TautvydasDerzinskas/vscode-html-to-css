@@ -234,7 +234,10 @@ await Promise.all([
   writeFile(`${outDir}robots.txt`, renderRobots()),
   // Serve files as-is: GitHub Pages would otherwise run them through Jekyll.
   writeFile(`${outDir}.nojekyll`, ''),
-  copyFile(`${root}images/html2css_transparent.png`, `${outDir}images/icon.png`),
+  // Favicons and the link preview image, generated from images/logo.svg by `npm run images`.
+  ...['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'og-image.png'].map(file =>
+    copyFile(`${webDir}assets/${file}`, `${outDir}${file}`)
+  ),
   copyFile(`${root}images/html2css_preview.gif`, `${outDir}images/preview.gif`),
 ]);
 

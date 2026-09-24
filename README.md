@@ -1,7 +1,9 @@
-# HTML to CSS / LESS / SCSS
+<p align="center">
+  <img src="images/icon.png" alt="HTML to CSS / LESS / SCSS" width="128" height="128">
+</p>
 
 <p align="center">
-  <a href="https://tautvydasderzinskas.github.io/vscode-html-to-css/"><img src="https://img.shields.io/badge/Try_it_online-HTML_to_CSS_converter-16a34a?style=for-the-badge" alt="Try it online: HTML to CSS converter"></a>
+  <a href="https://tautvydasderzinskas.github.io/vscode-html-to-css/"><img src="https://img.shields.io/badge/Try_it_online-HTML_to_CSS_converter-4f46e5?style=for-the-badge" alt="Try it online: HTML to CSS converter"></a>
 </p>
 
 A Visual Studio Code extension that turns HTML, JSX or template markup into ready-to-fill CSS,

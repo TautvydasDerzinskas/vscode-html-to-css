@@ -8,6 +8,10 @@ node_modules/**
 out/**
 src/**
 web/**
+scripts/**
+# Only the icon is needed; README images are served from GitHub.
+images/**
+!images/icon.png
 **/*.ts
 **/*.map
 .gitignore
