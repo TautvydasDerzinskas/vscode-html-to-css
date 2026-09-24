@@ -4,9 +4,10 @@
   <a href="https://tautvydasderzinskas.github.io/vscode-html-to-css/"><img src="https://img.shields.io/badge/Try_it_online-HTML_to_CSS_converter-16a34a?style=for-the-badge" alt="Try it online: HTML to CSS converter"></a>
 </p>
 
-A Visual Studio Code extension that turns HTML, JSX or template markup on your clipboard into
-ready-to-fill CSS, LESS or SCSS selectors. Works with plain HTML, React and Next.js, and Twig
-and friends.
+A Visual Studio Code extension that turns HTML, JSX or template markup into ready-to-fill CSS,
+LESS or SCSS selectors. Paste markup from the clipboard straight into a stylesheet as
+selectors, or select markup in any file and copy it as selectors. Works with plain HTML, React
+and Next.js, Vue, and Twig and friends.
 
 Prefer the browser? The same converter runs online at
 [tautvydasderzinskas.github.io/vscode-html-to-css](https://tautvydasderzinskas.github.io/vscode-html-to-css/).

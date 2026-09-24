@@ -1,7 +1,7 @@
 {
   "name": "vscode-html-to-css",
   "displayName": "HTML to CSS / LESS / SCSS",
-  "description": "Copy HTML, JSX/React or Twig markup and paste it as CSS / LESS / SCSS selectors code",
+  "description": "Turn HTML, JSX/React, Vue or Twig markup into CSS / LESS / SCSS selectors: paste it from the clipboard or copy a selection as selectors",
   "version": "1.5.2",
   "publisher": "tautvydasderzinskas",
   "icon": "images/html2css_transparent.png",

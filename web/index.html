@@ -121,7 +121,7 @@
             "name": "Is there a VS Code extension?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. The same converter is available as the HTML to CSS / LESS / SCSS extension for Visual Studio Code, on the VS Code Marketplace and Open VSX. Copy markup and press Ctrl+Alt+V (Cmd+Alt+V on macOS) in a stylesheet."
+              "text": "Yes. The same converter is available as the HTML to CSS / LESS / SCSS extension for Visual Studio Code, on the VS Code Marketplace and Open VSX. Copy markup and press Ctrl+Alt+V (Cmd+Alt+V on macOS) in a stylesheet, paste it as CSS or nested SCSS / LESS into any file from the context menu, or select markup and use Copy as CSS Selectors or Copy as Nested SCSS / LESS Selectors."
             }
           }
         ]
@@ -306,15 +306,33 @@
           <h2 id="vscode-heading">Use it inside VS Code</h2>
           <p>
             This page runs the same converter as the
-            <strong>HTML to CSS / LESS / SCSS</strong> extension for Visual Studio Code. Copy
-            markup, open a <code>.css</code>, <code>.scss</code>, <code>.sass</code> or
-            <code>.less</code> file and press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>V</kbd> (<kbd
-              >Cmd</kbd
-            >
-            + <kbd>Alt</kbd> + <kbd>V</kbd> on macOS) to paste it as selectors. The context menu can
-            also paste CSS or nested SCSS / LESS into any file, such as a Vue
-            <code>&lt;style&gt;</code> block. Every option in the sidebar is also an extension
-            setting.
+            <strong>HTML to CSS / LESS / SCSS</strong> extension for Visual Studio Code, with three
+            ways to use it:
+          </p>
+          <ul class="promo__list">
+            <li>
+              <strong>Paste into a stylesheet.</strong> Copy markup, open a <code>.css</code>,
+              <code>.scss</code>, <code>.sass</code> or <code>.less</code> file and press
+              <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd> (<kbd>Cmd</kbd>+<kbd>Alt</kbd>+<kbd
+                >V</kbd
+              >
+              on macOS). The output matches the file type.
+            </li>
+            <li>
+              <strong>Paste into any file.</strong> Right-click and pick
+              <em>Paste HTML as CSS Selectors</em> or
+              <em>Paste HTML as Nested SCSS / LESS Selectors</em>, e.g. in a Vue
+              <code>&lt;style&gt;</code> block.
+            </li>
+            <li>
+              <strong>Copy from a selection.</strong> Select markup in any HTML, JSX, Vue or Twig
+              file, right-click and pick <em>Copy as CSS Selectors</em> or
+              <em>Copy as Nested SCSS / LESS Selectors</em>, then paste anywhere.
+            </li>
+          </ul>
+          <p>
+            Menu entries only appear when the selection or clipboard holds convertible markup, and
+            every option in the sidebar is also an extension setting.
           </p>
           <p class="promo__links">
             <a
@@ -388,6 +406,24 @@
               SCSS and LESS share the same nested syntax for selectors, so the output works in
               <code>.scss</code>, <code>.less</code> and Sass projects using SCSS syntax. CSS output
               uses flat descendant selectors instead of nesting.
+            </p>
+          </details>
+          <details>
+            <summary>Is there a VS Code extension?</summary>
+            <p>
+              Yes. The same converter is available as the
+              <a
+                href="https://marketplace.visualstudio.com/items?itemName=tautvydasderzinskas.vscode-html-to-css"
+                rel="noopener"
+                >HTML to CSS / LESS / SCSS extension</a
+              >
+              for Visual Studio Code, on the VS Code Marketplace and Open VSX. Copy markup and press
+              <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd> (<kbd>Cmd</kbd>+<kbd>Alt</kbd>+<kbd
+                >V</kbd
+              >
+              on macOS) in a stylesheet, paste it as CSS or nested SCSS / LESS into any file from
+              the context menu, or select markup and use <em>Copy as CSS Selectors</em> or
+              <em>Copy as Nested SCSS / LESS Selectors</em>.
             </p>
           </details>
           <details>

@@ -589,8 +589,20 @@ html:not(.js) .link-button {
   align-items: center;
 }
 
-.promo__text p + p {
+.promo__text p + p,
+.promo__text * + p {
   margin-top: 16px;
+}
+
+.promo__list {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding-left: 20px;
+}
+
+.promo__list li::marker {
+  color: var(--green);
 }
 
 .promo__links {
