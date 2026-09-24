@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.6.0...v1.7.0) (2026-09-24)
+
+### Features
+
+* allow convert other way arround too ([cffaaf0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/cffaaf0e1ef4a69f8006abfe9f2d7a349c015cae))
+
 ## [1.6.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.5.2...v1.6.0) (2026-09-24)
 
 ### Features
