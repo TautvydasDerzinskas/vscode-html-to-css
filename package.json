@@ -1,7 +1,7 @@
 {
   "name": "vscode-html-to-css",
   "displayName": "HTML to CSS / LESS / SCSS",
-  "description": "Turn HTML, JSX/React, Vue or Twig markup into CSS / LESS / SCSS selectors: paste it from the clipboard or copy a selection as selectors",
+  "description": "Turn HTML, JSX/React, Vue or Twig markup into CSS / LESS / SCSS selectors, and CSS / SCSS / LESS back into HTML or JSX",
   "version": "1.6.0",
   "publisher": "tautvydasderzinskas",
   "icon": "images/html2css_transparent.png",
@@ -34,7 +34,10 @@
     "html to css",
     "jsx to css",
     "react to css",
-    "twig to css"
+    "twig to css",
+    "css to html",
+    "scss to html",
+    "less to html"
   ],
   "scripts": {
     "vscode:prepublish": "npm run build",
@@ -58,6 +61,7 @@
     "@semantic-release/git": "^11.0.1",
     "@semantic-release/github": "^12.0.9",
     "@types/node": "^22.18.0",
+    "@types/postcss-less": "^4.0.7",
     "@types/vscode": "^1.96.0",
     "@vscode/vsce": "^4.0.0",
     "commitizen": "^4.3.2",
@@ -67,6 +71,10 @@
     "husky": "^9.1.7",
     "node-html-parser": "^9.0.4",
     "oxlint": "^1.83.0",
+    "postcss": "^8.5.28",
+    "postcss-less": "^6.0.0",
+    "postcss-scss": "^4.0.9",
+    "postcss-selector-parser": "^7.1.6",
     "prettier": "^3.6.2",
     "semantic-release": "^25.0.9",
     "semantic-release-vsce": "^6.1.8",
@@ -125,6 +133,18 @@
         "title": "Copy as Nested SCSS / LESS Selectors",
         "category": "HTML to CSS",
         "enablement": "htmlToCss.selectionHasHtml"
+      },
+      {
+        "command": "htmlToCss.copyAsHtml",
+        "title": "Copy as HTML",
+        "category": "HTML to CSS",
+        "enablement": "htmlToCss.selectionHasCss"
+      },
+      {
+        "command": "htmlToCss.pasteAsHtml",
+        "title": "Paste as HTML",
+        "category": "HTML to CSS",
+        "enablement": "!editorReadOnly"
       }
     ],
     "keybindings": [
@@ -148,6 +168,11 @@
           "group": "9_cutcopypaste@2.2"
         },
         {
+          "command": "htmlToCss.copyAsHtml",
+          "when": "htmlToCss.selectionHasCss",
+          "group": "9_cutcopypaste@2.3"
+        },
+        {
           "command": "htmlToCss.paste",
           "when": "htmlToCss.clipboardHasHtml && (editorLangId =~ /^(css|postcss|less|scss|sass)$/ || resourceExtname =~ /^\\.(css|less|scss|sass)$/i)",
           "group": "htmlToCss@1"
@@ -161,53 +186,76 @@
           "command": "htmlToCss.pasteAsNested",
           "when": "htmlToCss.clipboardHasHtml",
           "group": "htmlToCss@3"
+        },
+        {
+          "command": "htmlToCss.pasteAsHtml",
+          "when": "htmlToCss.clipboardHasCss",
+          "group": "htmlToCss@4"
         }
       ]
     },
-    "configuration": {
-      "type": "object",
-      "title": "HTML to CSS / LESS / SCSS configuration",
-      "properties": {
-        "htmlToCss.hideTags": {
-          "type": "boolean",
-          "default": true,
-          "description": "Hide tag selector if element has class or id."
-        },
-        "htmlToCss.convertBEM": {
-          "type": "boolean",
-          "default": true,
-          "description": "Recognize BEM classes and split them accordingly."
-        },
-        "htmlToCss.reduceSiblings": {
-          "type": "boolean",
-          "default": true,
-          "description": "Collapse duplicate sibling elements that produce the same selector."
-        },
-        "htmlToCss.combineParents": {
-          "type": "boolean",
-          "default": true,
-          "description": "Merge duplicate sibling elements that have children, combining their children."
-        },
-        "htmlToCss.preappendHtml": {
-          "type": "boolean",
-          "default": false,
-          "description": "Pre-append comment containing transformed html structure."
-        },
-        "htmlToCss.classesOnly": {
-          "type": "boolean",
-          "default": false,
-          "description": "Generate class selectors only. Tag and id selectors are never emitted; elements without a class are skipped and their children move up."
-        },
-        "htmlToCss.ignoredSelectors": {
-          "type": "array",
-          "items": {
-            "type": "string"
+    "configuration": [
+      {
+        "title": "HTML → CSS / LESS / SCSS",
+        "properties": {
+          "htmlToCss.hideTags": {
+            "type": "boolean",
+            "default": true,
+            "description": "Hide tag selector if element has class or id."
           },
-          "default": [],
-          "markdownDescription": "Selectors that are never generated, such as utility classes. Supports class (`.container`), id (`#app`) and tag (`p`) selectors, e.g. `[\".container\", \".text-center\", \"p\"]`."
+          "htmlToCss.convertBEM": {
+            "type": "boolean",
+            "default": true,
+            "description": "Recognize BEM classes and split them accordingly."
+          },
+          "htmlToCss.reduceSiblings": {
+            "type": "boolean",
+            "default": true,
+            "description": "Collapse duplicate sibling elements that produce the same selector."
+          },
+          "htmlToCss.combineParents": {
+            "type": "boolean",
+            "default": true,
+            "description": "Merge duplicate sibling elements that have children, combining their children."
+          },
+          "htmlToCss.preappendHtml": {
+            "type": "boolean",
+            "default": false,
+            "description": "Pre-append comment containing transformed html structure."
+          },
+          "htmlToCss.classesOnly": {
+            "type": "boolean",
+            "default": false,
+            "description": "Generate class selectors only. Tag and id selectors are never emitted; elements without a class are skipped and their children move up."
+          },
+          "htmlToCss.ignoredSelectors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "markdownDescription": "Selectors that are never generated, such as utility classes. Supports class (`.container`), id (`#app`) and tag (`p`) selectors, e.g. `[\".container\", \".text-center\", \"p\"]`."
+          }
+        }
+      },
+      {
+        "title": "CSS / LESS / SCSS → HTML",
+        "properties": {
+          "htmlToCss.guessTagNames": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Guess tags from class names when converting CSS to HTML, e.g. `.card__link` becomes `<a>`, `.card__title` becomes `<h2>` and children of `ul` become `<li>`. When off, only tags written in the selectors are used."
+          },
+          "htmlToCss.defaultTagName": {
+            "type": "string",
+            "default": "div",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9-]*$",
+            "patternErrorMessage": "Use a plain tag name, such as div or section.",
+            "markdownDescription": "The tag used when converting CSS to HTML for an element whose selector names no tag (and no tag is guessed)."
+          }
         }
       }
-    }
+    ]
   },
   "config": {
     "commitizen": {

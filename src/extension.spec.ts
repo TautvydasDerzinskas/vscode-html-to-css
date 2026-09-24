@@ -314,7 +314,9 @@ describe('extension', () => {
 
       expect(state.contexts).toEqual({
         'htmlToCss.selectionHasHtml': false,
+        'htmlToCss.selectionHasCss': false,
         'htmlToCss.clipboardHasHtml': false,
+        'htmlToCss.clipboardHasCss': false,
       });
     });
 
@@ -345,6 +347,48 @@ describe('extension', () => {
         expect(state.contexts['htmlToCss.selectionHasHtml']).toBe(false);
       }
     );
+
+    it('turns the CSS selection key on for a stylesheet, never together with the HTML one', async () => {
+      const editor = createEditor({ languageId: 'scss', fileName: '/card.scss' });
+      state.activeTextEditor = editor;
+      await start();
+
+      editor.selections = [selected('.card { &__title {} }')];
+      fire('selection');
+      await vi.advanceTimersByTimeAsync(100);
+      expect(state.contexts['htmlToCss.selectionHasCss']).toBe(true);
+      expect(state.contexts['htmlToCss.selectionHasHtml']).toBe(false);
+
+      editor.selections = [selected('<div class="a">x</div>')];
+      fire('selection');
+      await vi.advanceTimersByTimeAsync(100);
+      expect(state.contexts['htmlToCss.selectionHasCss']).toBe(false);
+      expect(state.contexts['htmlToCss.selectionHasHtml']).toBe(true);
+    });
+
+    it('turns the CSS clipboard key on when CSS is copied', async () => {
+      await start();
+
+      state.clipboardText = '.a { .b {} }';
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(state.contexts['htmlToCss.clipboardHasCss']).toBe(true);
+      expect(state.contexts['htmlToCss.clipboardHasHtml']).toBe(false);
+    });
+
+    it('swaps the clipboard keys right after Copy as HTML', async () => {
+      state.clipboardText = '.old {}';
+      state.activeTextEditor = createEditor({ languageId: 'css', fileName: '/a.css' }, [
+        selected('.a .b {}'),
+      ]);
+      await start();
+      expect(state.contexts['htmlToCss.clipboardHasCss']).toBe(true);
+
+      await state.commands.get('htmlToCss.copyAsHtml')!();
+
+      expect(state.contexts['htmlToCss.clipboardHasCss']).toBe(false);
+      expect(state.contexts['htmlToCss.clipboardHasHtml']).toBe(true);
+    });
 
     it('respects settings: an ignored-only selection does not count', async () => {
       state.configuration['htmlToCss.ignoredSelectors'] = ['.a'];
@@ -427,46 +471,135 @@ describe('extension', () => {
     });
   });
 
-  it('only shows the paste entries in the menu when the clipboard holds HTML', () => {
-    const menu = packageJson.contributes.menus['editor/context'];
-    const pasteEntries = menu.filter(entry => entry.command.startsWith('htmlToCss.paste'));
+  describe('context menu', () => {
+    const stylesheetTest = packageJson.contributes.commands
+      .find(entry => entry.command === 'htmlToCss.paste')
+      ?.enablement.match(/\(.*\)/)?.[0];
 
-    expect(pasteEntries).toHaveLength(3);
-    for (const entry of pasteEntries) {
-      expect(entry.when.startsWith('htmlToCss.clipboardHasHtml')).toBe(true);
-    }
+    it.each([
+      ['htmlToCss.copyAsCss', 'htmlToCss.selectionHasHtml'],
+      ['htmlToCss.copyAsNested', 'htmlToCss.selectionHasHtml'],
+      ['htmlToCss.copyAsHtml', 'htmlToCss.selectionHasCss'],
+      // Same file-type test as the command itself, so the two can never disagree.
+      ['htmlToCss.paste', `htmlToCss.clipboardHasHtml && ${stylesheetTest}`],
+      ['htmlToCss.pasteAsCss', 'htmlToCss.clipboardHasHtml'],
+      ['htmlToCss.pasteAsNested', 'htmlToCss.clipboardHasHtml'],
+      ['htmlToCss.pasteAsHtml', 'htmlToCss.clipboardHasCss'],
+    ])('shows %s only when %s', (command, when) => {
+      const entries = packageJson.contributes.menus['editor/context'].filter(
+        entry => entry.command === command
+      );
+      expect(entries).toEqual([expect.objectContaining({ when })]);
+    });
+
+    it('never lets a clipboard check block a command, only hide its menu entry', () => {
+      // The check can lag a moment behind a copy, so a quick copy-then-shortcut must still work.
+      for (const command of packageJson.contributes.commands) {
+        expect(command.enablement ?? '').not.toMatch(/htmlToCss\.clipboardHas/);
+      }
+    });
   });
 
-  it('only shows the match-file-type paste in the menu for stylesheets', () => {
-    const menuEntry = packageJson.contributes.menus['editor/context'].find(
-      entry => entry.command === 'htmlToCss.paste'
-    );
-    const command = packageJson.contributes.commands.find(
-      entry => entry.command === 'htmlToCss.paste'
-    );
-    const fileTypeTest = command?.enablement.match(/\(.*\)/)?.[0];
+  describe('copy and paste as HTML', () => {
+    it('copies a selected SCSS block as HTML', async () => {
+      state.activeTextEditor = createEditor({ languageId: 'scss', fileName: '/card.scss' }, [
+        selected('.card { &__title {} a.card__link {} }'),
+      ]);
 
-    // Same file-type test as the command itself, so the two can never disagree.
-    expect(fileTypeTest).toBeDefined();
-    expect(menuEntry?.when).toBe(`htmlToCss.clipboardHasHtml && ${fileTypeTest}`);
-  });
+      await runPasteCommand('htmlToCss.copyAsHtml');
 
-  it('never lets the clipboard check block a command, only hide its menu entry', () => {
-    // The check can lag a moment behind a copy, so a quick copy-then-shortcut must still work.
-    for (const command of packageJson.contributes.commands) {
-      expect(command.enablement ?? '').not.toContain('htmlToCss.clipboardHasHtml');
-    }
-  });
+      expect(state.copiedText).toBe(
+        '<div class="card">\n  <div class="card__title"></div>\n  <a class="card__link"></a>\n</div>\n'
+      );
+      expect(state.edits).toEqual([]);
+      expect(state.infoMessages).toEqual(['HTML to CSS: copied 3 HTML elements to the clipboard.']);
+    });
 
-  it('only shows the copy-as entries in the menu for a convertible selection', () => {
-    const copyEntries = packageJson.contributes.menus['editor/context'].filter(entry =>
-      entry.command.startsWith('htmlToCss.copyAs')
-    );
+    it('applies the CSS-to-HTML settings', async () => {
+      state.configuration['htmlToCss.guessTagNames'] = true;
+      state.configuration['htmlToCss.defaultTagName'] = 'section';
+      state.activeTextEditor = createEditor({ languageId: 'less', fileName: '/a.less' }, [
+        selected('.card { &__title {} &__body {} }'),
+      ]);
 
-    expect(copyEntries).toHaveLength(2);
-    for (const entry of copyEntries) {
-      expect(entry.when).toBe('htmlToCss.selectionHasHtml');
-    }
+      await runPasteCommand('htmlToCss.copyAsHtml');
+
+      expect(state.copiedText).toBe(
+        '<section class="card">\n  <h2 class="card__title"></h2>\n  <section class="card__body"></section>\n</section>\n'
+      );
+    });
+
+    it('refuses to copy a selection that is HTML, not CSS', async () => {
+      state.activeTextEditor = createEditor({ languageId: 'html', fileName: '/index.html' }, [
+        selected('<div class="a">x</div>'),
+      ]);
+
+      await runPasteCommand('htmlToCss.copyAsHtml');
+
+      expect(state.copiedText).toBeUndefined();
+      expect(state.errorMessages[0]).toContain('does not contain CSS rules');
+    });
+
+    it('reports when nothing is selected to copy as HTML', async () => {
+      state.activeTextEditor = createEditor({ languageId: 'css', fileName: '/a.css' });
+
+      await runPasteCommand('htmlToCss.copyAsHtml');
+
+      expect(state.errorMessages[0]).toContain('select some CSS');
+    });
+
+    it('pastes clipboard CSS as HTML into any file', async () => {
+      state.activeTextEditor = createEditor({ languageId: 'twig', fileName: '/card.twig' });
+      state.clipboardText = '.card .card__title {}';
+
+      await runPasteCommand('htmlToCss.pasteAsHtml');
+
+      expect(state.edits).toEqual([
+        {
+          type: 'insert',
+          value: '<div class="card">\n  <div class="card__title"></div>\n</div>\n',
+        },
+      ]);
+    });
+
+    it.each([
+      ['a .tsx file', { languageId: 'typescriptreact', fileName: '/Card.tsx' }],
+      ['a .jsx file', { languageId: 'javascriptreact', fileName: '/Card.jsx' }],
+      ['a React file without a language id', { languageId: 'plaintext', fileName: '/Card.jsx' }],
+    ])('pastes JSX with className into %s', async (_label, document) => {
+      state.activeTextEditor = createEditor(document);
+      state.clipboardText = '.form { label[for=email] {} input.form__input {} }';
+
+      await runPasteCommand('htmlToCss.pasteAsHtml');
+
+      expect(state.edits[0].value).toBe(
+        [
+          '<div className="form">',
+          '  <label htmlFor="email"></label>',
+          '  <input className="form__input" />',
+          '</div>',
+          '',
+        ].join('\n')
+      );
+    });
+
+    it('reports clipboard content that is HTML rather than CSS', async () => {
+      state.activeTextEditor = createEditor({ languageId: 'html', fileName: '/index.html' });
+      state.clipboardText = '<div class="a">x</div>';
+
+      await runPasteCommand('htmlToCss.pasteAsHtml');
+
+      expect(state.edits).toEqual([]);
+      expect(state.errorMessages[0]).toContain('does not contain CSS rules');
+    });
+
+    it('reports an empty clipboard for Paste as HTML', async () => {
+      state.activeTextEditor = createEditor({ languageId: 'html', fileName: '/index.html' });
+
+      await runPasteCommand('htmlToCss.pasteAsHtml');
+
+      expect(state.errorMessages[0]).toContain('clipboard is empty');
+    });
   });
 
   it('deactivates without throwing', () => {

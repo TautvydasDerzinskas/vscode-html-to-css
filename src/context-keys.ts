@@ -1,9 +1,13 @@
 import * as vscode from 'vscode';
 
-/** Set while the editor selection holds HTML that converts to at least one selector. */
-export const SELECTION_HAS_HTML = 'htmlToCss.selectionHasHtml';
-/** Set while the clipboard holds HTML that converts to at least one selector. */
-export const CLIPBOARD_HAS_HTML = 'htmlToCss.clipboardHasHtml';
+/**
+ * Context keys, set while the selection or clipboard holds HTML that converts to at least one
+ * selector, or CSS whose rules describe at least one element. Never both at once.
+ */
+const KEYS = {
+  selection: { html: 'htmlToCss.selectionHasHtml', css: 'htmlToCss.selectionHasCss' },
+  clipboard: { html: 'htmlToCss.clipboardHasHtml', css: 'htmlToCss.clipboardHasCss' },
+} as const;
 
 /** Waits for a selection drag or burst of typing to settle before converting. */
 const SELECTION_DEBOUNCE_MS = 100;
@@ -13,8 +17,15 @@ const SELECTION_DEBOUNCE_MS = 100;
  */
 const CLIPBOARD_POLL_MS = 1000;
 
-/** Reports whether `text` holds HTML that converts to at least one selector. */
+/** Reports whether `text` can be converted, using the settings for `scope`. */
 export type ConvertibleCheck = (text: string, scope: vscode.Uri | undefined) => boolean;
+
+export interface ConvertibleChecks {
+  /** HTML that converts to at least one selector. */
+  html: ConvertibleCheck;
+  /** CSS, SCSS or LESS whose rules describe at least one element. */
+  css: ConvertibleCheck;
+}
 
 /**
  * Keeps the `when`-clause context keys that enable the copy and paste menu entries in step
@@ -28,7 +39,7 @@ export class ContextKeys implements vscode.Disposable {
   /** The clipboard text last checked, so an unchanged clipboard is not converted again. */
   private lastClipboardText: string | undefined;
 
-  constructor(private readonly isConvertible: ConvertibleCheck) {
+  constructor(private readonly checks: ConvertibleChecks) {
     this.disposables.push(
       vscode.window.onDidChangeTextEditorSelection(() => this.scheduleSelectionUpdate()),
       vscode.window.onDidChangeActiveTextEditor(() => {
@@ -65,7 +76,7 @@ export class ContextKeys implements vscode.Disposable {
       return;
     }
     this.lastClipboardText = text;
-    this.set(CLIPBOARD_HAS_HTML, this.isConvertible(text, this.activeScope()));
+    this.update('clipboard', text, this.activeScope());
   }
 
   public dispose(): void {
@@ -84,7 +95,14 @@ export class ContextKeys implements vscode.Disposable {
   private updateSelection(): void {
     const editor = vscode.window.activeTextEditor;
     const text = editor ? getSelectedText(editor) : '';
-    this.set(SELECTION_HAS_HTML, this.isConvertible(text, editor?.document.uri));
+    this.update('selection', text, editor?.document.uri);
+  }
+
+  private update(source: keyof typeof KEYS, text: string, scope: vscode.Uri | undefined): void {
+    const isHtml = this.checks.html(text, scope);
+    // HTML is checked first and wins, so the CSS parser never runs on markup.
+    this.set(KEYS[source].html, isHtml);
+    this.set(KEYS[source].css, !isHtml && this.checks.css(text, scope));
   }
 
   private activeScope(): vscode.Uri | undefined {

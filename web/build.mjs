@@ -19,12 +19,22 @@ const siteUrl = (
   process.env.SITE_URL ?? 'https://tautvydasderzinskas.github.io/vscode-html-to-css/'
 ).replace(/\/?$/, '/');
 
-const DEFAULT_FORMAT = 'scss';
-const FORMATS = [
-  { id: 'css', label: 'CSS' },
-  { id: 'scss', label: 'SCSS / Sass' },
-  { id: 'less', label: 'LESS' },
-];
+/** The two conversion directions, in the order of the `contributes.configuration` sections. */
+const DIRECTIONS = ['html-to-css', 'css-to-html'];
+
+/** Output choices per direction. */
+const FORMATS = {
+  'html-to-css': [
+    { id: 'css', label: 'CSS' },
+    { id: 'scss', label: 'SCSS / Sass', default: true },
+    { id: 'less', label: 'LESS' },
+  ],
+  'css-to-html': [
+    { id: 'html', label: 'HTML', default: true },
+    { id: 'jsx', label: 'JSX' },
+  ],
+};
+const DEFAULT_FORMAT = FORMATS['html-to-css'].find(format => format.default).id;
 
 /** Words that read better upper-cased in option titles. */
 const ACRONYMS = new Set(['bem', 'html', 'css']);
@@ -55,26 +65,37 @@ function toDescriptionHtml(property) {
   return escapeHtml(text).replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 
+/**
+ * Reads the settings, grouped by direction: the first `contributes.configuration` section
+ * holds the HTML -> CSS settings, the second the CSS -> HTML ones.
+ */
 function readOptionDefinitions(packageJson) {
   const prefix = 'htmlToCss.';
-  return Object.entries(packageJson.contributes.configuration.properties).map(
-    ([name, property]) => ({
+  const sections = packageJson.contributes.configuration;
+  if (!Array.isArray(sections) || sections.length !== DIRECTIONS.length) {
+    throw new Error(`Expected ${DIRECTIONS.length} configuration sections, one per direction`);
+  }
+
+  return sections.flatMap((section, index) =>
+    Object.entries(section.properties).map(([name, property]) => ({
       key: name.slice(prefix.length),
+      direction: DIRECTIONS[index],
       type: property.type,
       defaultValue: property.default,
       title: toTitle(name.slice(prefix.length)),
       descriptionHtml: toDescriptionHtml(property),
-    })
+    }))
   );
 }
 
 function renderOption(option) {
   const id = `option-${option.key}`;
+  const data = `data-option="${option.key}" data-type="${option.type}" data-direction="${option.direction}"`;
 
   if (option.type === 'boolean') {
     return `<div class="option">
           <label class="toggle" for="${id}">
-            <input type="checkbox" role="switch" id="${id}" name="${option.key}" data-option="${option.key}" data-type="boolean"${option.defaultValue ? ' checked' : ''} />
+            <input type="checkbox" role="switch" id="${id}" name="${option.key}" ${data}${option.defaultValue ? ' checked' : ''} />
             <span class="toggle__track" aria-hidden="true"></span>
             <span class="toggle__title">${option.title}</span>
           </label>
@@ -85,28 +106,45 @@ function renderOption(option) {
   if (option.type === 'array') {
     return `<div class="option">
           <label class="option__title" for="${id}">${option.title}</label>
-          <input type="text" class="text-input" id="${id}" name="${option.key}" data-option="${option.key}" data-type="array" value="${escapeHtml(option.defaultValue.join(', '))}" placeholder=".container, .text-center, p" spellcheck="false" autocomplete="off" />
+          <input type="text" class="text-input" id="${id}" name="${option.key}" ${data} value="${escapeHtml(option.defaultValue.join(', '))}" placeholder=".container, .text-center, p" spellcheck="false" autocomplete="off" />
           <p class="option__description">${option.descriptionHtml} Separate entries with commas.</p>
+        </div>`;
+  }
+
+  if (option.type === 'string') {
+    return `<div class="option">
+          <label class="option__title" for="${id}">${option.title}</label>
+          <input type="text" class="text-input" id="${id}" name="${option.key}" ${data} value="${escapeHtml(option.defaultValue)}" placeholder="${escapeHtml(option.defaultValue)}" spellcheck="false" autocomplete="off" />
+          <p class="option__description">${option.descriptionHtml}</p>
         </div>`;
   }
 
   throw new Error(`Unsupported option type "${option.type}" for ${option.key}`);
 }
 
-function renderFormats() {
-  return FORMATS.map(
-    format => `<label class="segmented__item">
-            <input type="radio" name="format" value="${format.id}"${format.id === DEFAULT_FORMAT ? ' checked' : ''} />
+function renderFormats(direction) {
+  return FORMATS[direction]
+    .map(
+      format => `<label class="segmented__item">
+            <input type="radio" name="format-${direction}" value="${format.id}" data-direction="${direction}"${format.default ? ' checked' : ''} />
             <span>${format.label}</span>
           </label>`
-  ).join('\n          ');
+    )
+    .join('\n          ');
 }
 
 function renderExampleButtons() {
   return EXAMPLES.map(
     example =>
-      `<button type="button" class="chip" data-example="${example.id}">${example.label}</button>`
+      `<button type="button" class="chip" data-example="${example.id}" data-direction="${example.direction}">${example.label}</button>`
   ).join('\n            ');
+}
+
+function renderOptions(options, direction) {
+  return options
+    .filter(option => option.direction === direction)
+    .map(renderOption)
+    .join('\n        ');
 }
 
 /** Loads the extension's converter into this Node process. */
@@ -126,15 +164,21 @@ async function loadConverter() {
 
 async function renderPage(options) {
   const HtmlConverterService = await loadConverter();
-  const defaults = Object.fromEntries(options.map(option => [option.key, option.defaultValue]));
-  const example = EXAMPLES[0];
+  const defaults = Object.fromEntries(
+    options
+      .filter(option => option.direction === 'html-to-css')
+      .map(option => [option.key, option.defaultValue])
+  );
+  const example = EXAMPLES.find(candidate => candidate.direction === 'html-to-css');
   const exampleOutput = new HtmlConverterService(defaults).convert(example.code, DEFAULT_FORMAT);
 
   const template = await readFile(`${webDir}index.html`, 'utf8');
   const replacements = {
     SITE_URL: siteUrl,
-    OPTIONS: options.map(renderOption).join('\n        '),
-    FORMATS: renderFormats(),
+    OPTIONS_HTML_TO_CSS: renderOptions(options, 'html-to-css'),
+    OPTIONS_CSS_TO_HTML: renderOptions(options, 'css-to-html'),
+    FORMATS_HTML_TO_CSS: renderFormats('html-to-css'),
+    FORMATS_CSS_TO_HTML: renderFormats('css-to-html'),
     EXAMPLE_BUTTONS: renderExampleButtons(),
     EXAMPLE_INPUT: escapeHtml(example.code),
     EXAMPLE_OUTPUT: escapeHtml(exampleOutput),

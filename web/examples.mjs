@@ -1,10 +1,11 @@
 /**
- * Sample markup for the "Try an example" buttons. Shared by the build, which pre-renders the
- * first one into the static page, and by the browser bundle.
+ * Samples for the "Try an example" buttons, per conversion direction. Shared by the build,
+ * which pre-renders the first HTML one into the static page, and by the browser bundle.
  */
 export const EXAMPLES = [
   {
     id: 'html',
+    direction: 'html-to-css',
     label: 'HTML',
     code: `<div class="card">
   <div class="card__header card__header--featured">
@@ -18,6 +19,7 @@ export const EXAMPLES = [
   },
   {
     id: 'jsx',
+    direction: 'html-to-css',
     label: 'JSX / React',
     code: `<div className="card">
   <button className="card__btn" onClick={() => setOpen(true)} style={{ color: 'red' }}>
@@ -32,6 +34,7 @@ export const EXAMPLES = [
   },
   {
     id: 'twig',
+    direction: 'html-to-css',
     label: 'Twig',
     code: `{% block card %}
 <div class="card {{ extraClass }}">
@@ -47,6 +50,7 @@ export const EXAMPLES = [
   },
   {
     id: 'vue',
+    direction: 'html-to-css',
     label: 'Vue',
     code: `<template>
   <nav class="menu">
@@ -59,6 +63,7 @@ export const EXAMPLES = [
   },
   {
     id: 'handlebars',
+    direction: 'html-to-css',
     label: 'Handlebars',
     code: `<ul class="list">
   {{#each items}}
@@ -67,5 +72,56 @@ export const EXAMPLES = [
     </li>
   {{/each}}
 </ul>`,
+  },
+  {
+    id: 'scss',
+    direction: 'css-to-html',
+    label: 'SCSS',
+    code: `.card {
+  &--featured {}
+
+  &__header {
+    .card__title {}
+  }
+
+  &__body {
+    .card__text {}
+
+    a.card__link {
+      &:hover {}
+    }
+  }
+}`,
+  },
+  {
+    id: 'css',
+    direction: 'css-to-html',
+    label: 'CSS',
+    code: `.nav {}
+.nav .nav__list {}
+.nav .nav__list > li {}
+.nav .nav__list > li > a.nav__link:hover {}
+.nav .nav__toggle {}`,
+  },
+  {
+    id: 'less',
+    direction: 'css-to-html',
+    label: 'LESS',
+    code: `@gap: 16px;
+
+.rounded(@radius: 4px) {
+  border-radius: @radius;
+}
+
+.form {
+  .rounded();
+
+  &-row {
+    label[for=email] {}
+    input.form__input[type=email] {}
+  }
+
+  button[type=submit] {}
+}`,
   },
 ];

@@ -393,14 +393,62 @@ h3 {
 /* The examples, Convert button and pane actions need JavaScript. */
 html:not(.js) .examples,
 html:not(.js) .actions,
-html:not(.js) .link-button {
+html:not(.js) .link-button,
+html:not(.js) .pane-switch {
   display: none;
 }
 
 .panes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 12px;
+}
+
+/* Only the settings, formats and examples for the current direction are shown. */
+.app[data-direction='html-to-css'] [data-direction='css-to-html'],
+.app[data-direction='css-to-html'] [data-direction='html-to-css'] {
+  display: none;
+}
+
+.segmented--two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.pane-switch {
+  display: flex;
+  align-items: center;
+  padding-top: 30px;
+}
+
+.switch-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.2s;
+}
+
+.switch-button:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.switch-button:active {
+  transform: scale(0.94);
+}
+
+.switch-button:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
 }
 
 .pane__header {
@@ -570,6 +618,15 @@ html:not(.js) .link-button {
   font-weight: 700;
 }
 
+.steps__note {
+  max-width: 900px;
+  color: var(--text-muted);
+}
+
+.content .steps__note {
+  margin-top: 16px;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -678,6 +735,16 @@ html:not(.js) .link-button {
 @media (max-width: 700px) {
   .panes {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Stacked panes: the switch sits between them, pointing up and down. */
+  .pane-switch {
+    justify-content: center;
+    padding-top: 0;
+  }
+
+  .switch-button svg {
+    transform: rotate(90deg);
   }
 
   .code {

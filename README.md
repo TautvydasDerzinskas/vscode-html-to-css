@@ -9,8 +9,12 @@ LESS or SCSS selectors. Paste markup from the clipboard straight into a styleshe
 selectors, or select markup in any file and copy it as selectors. Works with plain HTML, React
 and Next.js, Vue, and Twig and friends.
 
+It also works the other way round: turn CSS, SCSS or LESS into the HTML (or JSX) skeleton its
+selectors describe. See [CSS to HTML](#css-to-html).
+
 Prefer the browser? The same converter runs online at
-[tautvydasderzinskas.github.io/vscode-html-to-css](https://tautvydasderzinskas.github.io/vscode-html-to-css/).
+[tautvydasderzinskas.github.io/vscode-html-to-css](https://tautvydasderzinskas.github.io/vscode-html-to-css/),
+in both directions.
 
 ## Usage
 
@@ -216,7 +220,80 @@ Two things worth knowing:
 The same handling covers **Jinja2**, **Nunjucks**, **Liquid**, **Handlebars** and **Mustache**,
 and the `{{ ... }}` half covers **Vue** and **Angular** templates.
 
+## CSS to HTML
+
+The reverse direction turns CSS, SCSS or LESS into the element tree its selectors describe.
+
+- **Copy as HTML** — select a CSS, SCSS or LESS block in any file, right-click and pick
+  **Copy as HTML**. The HTML goes to the clipboard.
+- **Paste as HTML** — copy a CSS, SCSS or LESS block, right-click in any file and pick
+  **Paste as HTML**. In a React file (`.jsx` / `.tsx`) it pastes JSX instead, with `className`
+  and `htmlFor`, and void elements such as `<img />` self-closed.
+
+Like the other commands, both only appear in the context menu when the selection or clipboard
+holds something they can convert: a stylesheet whose rules describe at least one element.
+
+Given this SCSS:
+
+```scss
+.card {
+  &--featured {
+  }
+  &__header {
+    .card__title {
+    }
+  }
+  &__body {
+    a.card__link {
+      &:hover {
+      }
+    }
+  }
+}
+```
+
+you get:
+
+```html
+<div class="card card--featured">
+  <div class="card__header">
+    <div class="card__title"></div>
+  </div>
+  <div class="card__body">
+    <a class="card__link"></a>
+  </div>
+</div>
+```
+
+How selectors are read:
+
+| Written as                                       | Becomes                                                |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| Nesting, descendant (` `) and child (`>`)        | A child element                                        |
+| `&__element`, `&-element`                        | A child element — BEM elements live inside their block |
+| `&--modifier`, `&.is-active`                     | An extra class on the same element                     |
+| `+` and `~`                                      | A sibling element                                      |
+| `#id`, `[type=email]`, `[disabled]`              | `id="…"`, `type="email"`, `disabled`                   |
+| `a.link`, `section.hero`                         | That tag                                               |
+| `.card` (no tag)                                 | `div`, or the `defaultTagName` setting                 |
+| `:hover`, `::before`, `:nth-child(2)`            | Ignored — they describe states, not elements           |
+| `html`, `body`, `:root`, `*`                     | Skipped; their children move up                        |
+| `@media`, `@supports`, `@include` blocks         | Read as if the wrapper were not there                  |
+| LESS mixins and variables, SCSS `%placeholders`  | Skipped                                                |
+| `.icon-#{$name}`, `.item-@{name}` (interpolated) | Skipped, with everything nested inside                 |
+
+**Tags are never guessed by default.** Only tags written in the selectors are used; anything
+else becomes a `div`. Turn on `htmlToCss.guessTagNames` to pick tags from the last word of a
+class name (`.card__link` → `<a>`, `.card__title` → `<h2>`, `.primary-btn` → `<button>`),
+from the parent (`ul` children become `<li>`) and from attributes (`[href]` → `<a>`).
+
+CSS does not say everything HTML does, so the result is a skeleton: elements are empty, and a
+descendant selector always becomes a direct child, since CSS cannot tell how many wrappers sit
+in between.
+
 ## Settings
+
+HTML → CSS / LESS / SCSS:
 
 | Setting                      | Default | Description                                                                                   |
 | ---------------------------- | ------- | --------------------------------------------------------------------------------------------- |
@@ -227,6 +304,13 @@ and the `{{ ... }}` half covers **Vue** and **Angular** templates.
 | `htmlToCss.preappendHtml`    | `false` | Prepend the source markup as a comment above the generated selectors.                         |
 | `htmlToCss.classesOnly`      | `false` | Generate class selectors only — no tag or id selectors. Elements without a class are skipped. |
 | `htmlToCss.ignoredSelectors` | `[]`    | Selectors never to generate, e.g. `[".container", ".text-center", "p"]`.                      |
+
+CSS / LESS / SCSS → HTML:
+
+| Setting                    | Default | Description                                                                              |
+| -------------------------- | ------- | ---------------------------------------------------------------------------------------- |
+| `htmlToCss.guessTagNames`  | `false` | Guess tags from class names, parents and attributes instead of always using the default. |
+| `htmlToCss.defaultTagName` | `div`   | The tag for an element whose selector names none (and none is guessed).                  |
 
 ### Class-only output and ignored selectors
 
