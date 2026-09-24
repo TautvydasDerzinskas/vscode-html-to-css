@@ -2,7 +2,7 @@
   "name": "vscode-html-to-css",
   "displayName": "HTML to CSS / LESS / SCSS",
   "description": "Turn HTML, JSX/React, Vue or Twig markup into CSS / LESS / SCSS selectors, and CSS / SCSS / LESS back into HTML or JSX",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "publisher": "tautvydasderzinskas",
   "icon": "images/icon.png",
   "author": {

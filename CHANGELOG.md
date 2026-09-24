@@ -1,3 +1,9 @@
+## [1.7.1](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.7.0...v1.7.1) (2026-09-24)
+
+### Bug Fixes
+
+* update logo image and theme color scheme ([0baf3e0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/0baf3e0f316ea87d5edc28e8c3cdec1c8fcd481b))
+
 ## [1.7.0](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.6.0...v1.7.0) (2026-09-24)
 
 ### Features
