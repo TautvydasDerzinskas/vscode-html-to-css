@@ -115,3 +115,49 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
           OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
+
+  wiki:
+    name: Update wiki
+    # Runs after the release so the Changelog page includes the release it just made. It
+    # still runs when the release fails, since the docs themselves are already verified.
+    needs: [verify, release]
+    if: always() && needs.verify.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # The tip of main, which includes the release commit (it is marked [skip ci]).
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: .wiki
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate wiki
+        run: npm run wiki -- .wiki
+
+      # Only README.md, CHANGELOG.md and web/index.html feed the wiki, so most pushes
+      # leave it unchanged and nothing is committed.
+      - name: Publish wiki
+        working-directory: .wiki
+        run: |
+          git add --all
+          if git diff --cached --quiet; then
+            echo "Wiki is up to date"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "docs: update wiki from ${GITHUB_SHA::7}"
+          git push

@@ -52,6 +52,7 @@
     "web:build": "node web/build.mjs",
     "web:serve": "node web/build.mjs --serve",
     "images": "node scripts/generate-images.mjs",
+    "wiki": "node scripts/generate-wiki.mjs",
     "package": "vsce package",
     "commit": "cz",
     "semantic-release": "semantic-release",
