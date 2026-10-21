@@ -141,6 +141,68 @@ describe('HtmlConverterService', () => {
         '.standalone--thing {}\n'
       );
     });
+
+    // `&` stands for the whole selector it is nested in, so every `&` selector below has to
+    // compile back to a class that is in the markup.
+    it('nests elements only inside a selector that is the block class alone', () => {
+      // `&__title` and `&__input` would compile to `.card.is-open__title` and
+      // `#search.search__input`.
+      expect(
+        convert('<div class="card is-open"><h2 class="card__title">x</h2></div>', 'scss')
+      ).toBe('.card.is-open {\n  .card__title {}\n}\n');
+      expect(
+        convert('<form id="search" class="search"><input class="search__input"></form>', 'scss')
+      ).toBe('#search.search {\n  .search__input {}\n}\n');
+    });
+
+    it('nests a modifier only when its block ends the selector', () => {
+      // `&--sticky` would compile to `.header.js-header--sticky`.
+      expect(convert('<header class="header header--sticky js-header">x</header>', 'scss')).toBe(
+        '.header.header--sticky.js-header {}\n'
+      );
+      expect(
+        convert('<header class="card card--active">x</header>', 'scss', { hideTags: false })
+      ).toBe('header.card {\n  &--active {}\n}\n');
+    });
+
+    it('starts the selector of a nested element with &', () => {
+      // Sass rejects `.mt-4&__title`, `#faq-title&__title` and `h2&__title`.
+      expect(convert('<div class="card"><h2 class="mt-4 card__title">x</h2></div>', 'scss')).toBe(
+        '.card {\n  &__title.mt-4 {}\n}\n'
+      );
+      expect(
+        convert('<div class="faq"><h2 id="faq-title" class="faq__title">x</h2></div>', 'scss')
+      ).toBe('.faq {\n  #faq-title.faq__title {}\n}\n');
+      expect(
+        convert('<div class="card"><h2 class="card__title">x</h2></div>', 'scss', {
+          hideTags: false,
+        })
+      ).toBe('div.card {\n  h2.card__title {}\n}\n');
+      expect(
+        convert('<Card className="card"><h2 className="card__title">x</h2></Card>', 'scss', {
+          hideTags: false,
+        })
+      ).toBe('.card {\n  h2.card__title {}\n}\n');
+    });
+
+    it("keeps an element's modifier in its selector when the element has other classes", () => {
+      // `&--wide` would compile to `.card__body.is-open--wide`.
+      expect(
+        convert(
+          '<div class="card"><div class="card__body is-open card__body--wide">x</div></div>',
+          'scss'
+        )
+      ).toBe('.card {\n  &__body.is-open.card__body--wide {}\n}\n');
+    });
+
+    it('reads an element and its modifiers relative to a block whose name contains --', () => {
+      expect(
+        convert('<div class="b--x"><span class="b--x__e b--x__e--m">x</span></div>', 'scss')
+      ).toBe('.b--x {\n  &__e {\n    &--m {}\n  }\n}\n');
+      expect(
+        convert('<div class="b--x"><span class="b--x__e is-on b--x__e--m">x</span></div>', 'scss')
+      ).toBe('.b--x {\n  &__e.is-on.b--x__e--m {}\n}\n');
+    });
   });
 
   describe('sibling merging', () => {
