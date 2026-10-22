@@ -85,6 +85,8 @@ In a `.scss` or `.less` file you get nested selectors, with BEM modifiers folded
 
 `.card__title` stays written out in full on purpose: nesting it as `&__title` inside
 `&__header` would compile to `.card__header__title`, which is not the class in your markup.
+The same goes for a block with another class or an id, such as `<div class="card is-open">`:
+inside `.card.is-open`, `&__title` would compile to `.card.is-open__title`.
 
 In a `.css` file you get flat descendant selectors instead:
 

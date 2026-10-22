@@ -50,6 +50,17 @@ interface IgnoredSelectors {
 
 const TAG_NAME_PATTERN = /^[a-z][\w-]*$/i;
 
+/** The part of a BEM class before its modifier: `card` for `card--featured`. */
+function getBemBlock(className: string): string {
+  return className.split('--')[0];
+}
+
+/** True for a BEM modifier whose block is among `classNames`, like `card--big` next to `card`. */
+function isBemModifier(className: string, classNames: Set<string>): boolean {
+  const block = getBemBlock(className);
+  return block !== className && classNames.has(block);
+}
+
 /**
  * Converts an HTML fragment into CSS / LESS / SCSS selector scaffolding.
  */
@@ -237,38 +248,94 @@ class HtmlConverterService {
   /**
    * Rewrites BEM classes into nestable `&` selectors: a modifier becomes a child
    * `&--modifier` block, and an element named after its parent block becomes `&__element`.
+   *
+   * `&` stands for the whole selector it is nested in, so `&__element` is only written inside a
+   * selector that is the block class alone. Inside `.card.is-open` or `#search.search`,
+   * `&__title` would compile to `.card.is-open__title` or `#search.search__title`.
    */
   private convertBEM(dom: IDomObject[]): IDomObject[] {
     return dom.map(element => {
-      const ownClasses = new Set(element.classes);
-      const modifiers: IDomObject[] = [];
+      const { classes, modifiers } = this.splitModifiers(element.classes);
 
-      const classes = element.classes.filter(className => {
-        const block = className.split('--')[0];
-        if (block === className || !ownClasses.has(block)) {
-          return true;
-        }
-        modifiers.push({
-          tag: '',
-          ids: [],
-          classes: [`&--${className.slice(block.length + 2)}`],
-          children: [],
-        });
-        return false;
-      });
+      const block =
+        !element.tag && !element.ids.length && classes.length === 1 ? classes[0] : undefined;
+      // An element of an element stays written out in full: `&__title` inside `&__header`
+      // would compile to `.card__header__title`.
+      const children =
+        block && !block.startsWith('&')
+          ? element.children.map(child => this.nestBemElement(child, block))
+          : element.children;
 
-      const children = element.children.map(child => ({
-        ...child,
-        classes: child.classes.map(className => {
-          const block = classes.find(
-            candidate => !candidate.startsWith('&') && className.startsWith(`${candidate}__`)
-          );
-          return block ? `&__${className.slice(block.length + 2)}` : className;
-        }),
+      const modifierRules = modifiers.map(modifier => ({
+        tag: '',
+        ids: [],
+        classes: [`&--${modifier.slice(modifier.indexOf('--') + 2)}`],
+        children: [],
       }));
 
-      return { ...element, classes, children: this.convertBEM(children).concat(modifiers) };
+      return { ...element, classes, children: this.convertBEM(children).concat(modifierRules) };
     });
+  }
+
+  /**
+   * Splits off the modifiers that can become `&--modifier` rules. `&--big` adds to the end of the
+   * selector it is nested in, so only modifiers of the class that ends it qualify:
+   * `header.card { &--big {} }` compiles to `header.card--big`, but `.card.is-open { &--big {} }`
+   * would compile to `.card.is-open--big`. Any other modifier stays in the element's selector.
+   */
+  private splitModifiers(classNames: string[]): { classes: string[]; modifiers: string[] } {
+    const ownClasses = new Set(classNames);
+    let blockIndex = classNames.length - 1;
+    while (blockIndex >= 0 && isBemModifier(classNames[blockIndex], ownClasses)) {
+      blockIndex -= 1;
+    }
+    const block = classNames[blockIndex];
+    // Only the block's own modifiers may follow it, or it would not end the selector.
+    const following = classNames.slice(blockIndex + 1);
+    if (!block || following.some(className => getBemBlock(className) !== block)) {
+      return { classes: classNames, modifiers: [] };
+    }
+
+    const modifiers = classNames.filter(
+      className => className !== block && getBemBlock(className) === block
+    );
+    return { classes: classNames.filter(className => !modifiers.includes(className)), modifiers };
+  }
+
+  /**
+   * Writes a child's `block__element` class as `&__element`. `&` has to open the selector, so a
+   * child with a tag or an id keeps its classes as written (Sass rejects `h2&__title` and
+   * `#intro&__title`), and the nested class moves in front of the child's other classes. The
+   * element's own modifiers only go along when the child is that class alone, since
+   * `&--modifier` adds to the end of the selector.
+   */
+  private nestBemElement(child: IDomObject, block: string): IDomObject {
+    if (child.tag || child.ids.length) {
+      return child;
+    }
+
+    // Read relative to the parent, so `b--x__title--big` inside `.b--x` is `&__title--big`,
+    // a modifier of `&__title`.
+    const prefix = `${block}__`;
+    const nested = child.classes.map(className =>
+      className.startsWith(prefix) ? `&__${className.slice(prefix.length)}` : className
+    );
+    const { classes } = this.splitModifiers(nested);
+    if (classes.length === 1 && classes[0].startsWith('&')) {
+      return { ...child, classes: nested };
+    }
+
+    const nestedClasses = new Set(nested);
+    const index = nested.findIndex(
+      className => className.startsWith('&') && !isBemModifier(className, nestedClasses)
+    );
+    if (index === -1) {
+      return child;
+    }
+    return {
+      ...child,
+      classes: [nested[index], ...child.classes.filter((_className, other) => other !== index)],
+    };
   }
 
   /**
