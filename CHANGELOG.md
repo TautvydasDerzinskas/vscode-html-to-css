@@ -1,3 +1,9 @@
+## [1.7.2](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.7.1...v1.7.2) (2026-10-22)
+
+### Bug Fixes
+
+* only nest BEM classes where & compiles back to them ([1b8b00c](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/1b8b00c9f2830cb5f4891dbbf91ba4c404caf83b))
+
 ## [1.7.1](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.7.0...v1.7.1) (2026-09-24)
 
 ### Bug Fixes
