@@ -81,7 +81,7 @@
     "semantic-release": "^25.0.9",
     "semantic-release-vsce": "^6.1.8",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "homepage": "https://tautvydasderzinskas.github.io/vscode-html-to-css/",
   "repository": {
