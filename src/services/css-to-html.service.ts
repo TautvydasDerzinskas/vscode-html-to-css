@@ -55,13 +55,45 @@ const INTERPOLATION_PATTERN = /[#@]\{/;
 /** A LESS mixin definition or guard, e.g. `.mixin(@a)` or `.theme() when (@dark)`. */
 const MIXIN_PATTERN = /[.#][\w-]+\s*\(/;
 
+/**
+ * A `&` that stands for the parent selector: one after an even run of backslashes. After an odd
+ * run it is escaped and part of a name, as in `.\[\&\>\*\]\:p-4` (class `[&>*]:p-4`).
+ */
+const NESTING_PATTERN = /(?<=(?:^|[^\\])(?:\\\\)*)&/g;
+
+/**
+ * A hex escape of up to five digits at the end of a selector, such as the `\31` of `#\31` (id
+ * `1`). The selector parser ends a six-digit escape without a space, as in `.\000031`.
+ */
+const TRAILING_HEX_ESCAPE_PATTERN = /(?<=(?:^|[^\\])(?:\\\\)*)\\[\da-f]{1,5}$/i;
+
 /** `&__element`, `&-element` or `&_element`, but not a `&--modifier`. */
 const BEM_ELEMENT_SUFFIX_PATTERN = /^&(?!--)[-_]/;
 
-/** The part of a selector after its last combinator: `.a > .b.c` -> `.b.c`. */
+/**
+ * Trims a selector but keeps the space that ends a hex escape. `#\31 ` joined with `.child` must
+ * give `#\31  .child` (id `1`, then its child): in `#\31 .child` the one space ends the escape,
+ * and `.child` becomes a class of the same element.
+ */
+function trimSelector(selector: string): string {
+  const trimmed = selector.trim();
+  return TRAILING_HEX_ESCAPE_PATTERN.test(trimmed) ? `${trimmed} ` : trimmed;
+}
+
+/**
+ * The part of a selector after its last combinator: `.a > .b.c` -> `.b.c`. Parsed rather than
+ * split on spaces, which would also split an escape such as `.\32 xl` (class `2xl`).
+ */
 function lastCompound(selector: string): string {
-  const parts = selector.split(/\s*[>+~]\s*|\s+/);
-  return parts[parts.length - 1];
+  try {
+    const nodes = selectorParser().astSync(selector).first.nodes;
+    return trimSelector(
+      nodes.slice(nodes.map(node => node.type).lastIndexOf('combinator') + 1).join('')
+    );
+  } catch {
+    // Not a selector; `parseSelector` drops it.
+    return selector;
+  }
 }
 
 const VOID_TAGS = new Set([
@@ -273,7 +305,7 @@ class CssToHtmlService {
    */
   private resolveNesting(selectors: string[], parents: string[]): string[] {
     const usable = selectors
-      .map(selector => selector.trim())
+      .map(trimSelector)
       .filter(
         selector =>
           !INTERPOLATION_PATTERN.test(selector) &&
@@ -282,15 +314,15 @@ class CssToHtmlService {
           !selector.endsWith(':')
       );
     if (!parents.length) {
-      return usable.filter(selector => !selector.includes('&'));
+      return usable.filter(selector => !selector.match(NESTING_PATTERN));
     }
 
     return parents.flatMap(parent =>
       usable.map(selector => {
-        if (!selector.includes('&')) {
+        if (!selector.match(NESTING_PATTERN)) {
           return `${parent} ${selector}`;
         }
-        const joined = selector.replaceAll('&', parent);
+        const joined = selector.replace(NESTING_PATTERN, () => parent);
         // `&__title` and `&-title` name a BEM element, which lives inside its block. CSS would
         // compile them to a bare `.card__title`, losing the nesting the author wrote.
         // `&--modifier` stays as it is: it is the same element, and is merged back into it.

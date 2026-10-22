@@ -356,6 +356,44 @@ describe('HtmlConverterService', () => {
     });
   });
 
+  describe('names with characters CSS treats as syntax', () => {
+    it('escapes them in class names', () => {
+      // Unescaped, `md:flex` reads as class `md` with a `:flex` pseudo-class, and Sass rejects
+      // `w-1/2`, `py-0.5` and `top-[3px]`.
+      const html =
+        '<div class="card md:flex"><p class="card__text w-1/2 py-0.5 top-[3px]">x</p></div>';
+      expect(convert(html, 'css')).toBe(
+        '.card.md\\:flex {}\n.card.md\\:flex .card__text.w-1\\/2.py-0\\.5.top-\\[3px\\] {}\n'
+      );
+    });
+
+    it('escapes ids, and names that start with a digit or a dash and a digit', () => {
+      expect(convert('<div id="user.name" class="2xl -3">x</div>', 'css')).toBe(
+        '#user\\.name.\\32 xl.\\-3 {}\n'
+      );
+    });
+
+    it('escapes what follows the & of a nested BEM class', () => {
+      expect(
+        convert('<div class="grid"><div class="grid__col grid__col--1/2">x</div></div>', 'scss')
+      ).toBe('.grid {\n  &__col {\n    &--1\\/2 {}\n  }\n}\n');
+    });
+
+    it('leaves non-ASCII names and ordinary dashes as they are', () => {
+      expect(
+        convert('<div class="кнопка"><span class="кнопка__текст -mt-2">x</span></div>', 'scss')
+      ).toBe('.кнопка {\n  &__текст.-mt-2 {}\n}\n');
+    });
+
+    it('matches ignoredSelectors against the names as written', () => {
+      expect(
+        convert('<div class="card md:flex w-1/2">x</div>', 'css', {
+          ignoredSelectors: ['.md:flex', '.w-1/2'],
+        })
+      ).toBe('.card {}\n');
+    });
+  });
+
   describe('template syntax (Twig, Jinja2, Nunjucks, Liquid, Handlebars, Vue)', () => {
     const twigBlock = `{% block card %}
 <div class="card {{ extraClass }}">

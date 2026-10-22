@@ -50,6 +50,26 @@ interface IgnoredSelectors {
 
 const TAG_NAME_PATTERN = /^[a-z][\w-]*$/i;
 
+/**
+ * Writes a class or id as a CSS identifier, like the browser's `CSS.escape()`. Otherwise
+ * `md:flex` reads as class `md` with a `:flex` pseudo-class, `user.name` as id `user` with class
+ * `name`, and Sass rejects `w-1/2` and `2xl`. Characters above ASCII are valid as they are.
+ */
+function escapeIdentifier(name: string): string {
+  return Array.from(name, (character, index) => {
+    const code = character.codePointAt(0) ?? 0;
+    if (code <= 0x1f || code === 0x7f || (index === 0 && code >= 0x30 && code <= 0x39)) {
+      return `\\${code.toString(16)} `;
+    }
+    // `-3` becomes `\-3`, not `-\33 `: LESS drops the space that ends `\33 ` when it nests a
+    // rule inside, so `.-\33  { p {} }` would compile to `.-\33 p`.
+    if (index === 0 && character === '-' && (name.length === 1 || /\d/.test(name[1]))) {
+      return '\\-';
+    }
+    return code >= 0x80 || /[\w-]/.test(character) ? character : `\\${character}`;
+  }).join('');
+}
+
 /** The part of a BEM class before its modifier: `card` for `card--featured`. */
 function getBemBlock(className: string): string {
   return className.split('--')[0];
@@ -436,9 +456,15 @@ class HtmlConverterService {
   }
 
   private getSelector(element: IDomObject): string {
-    const ids = element.ids.length ? `#${element.ids.join('#')}` : '';
+    const ids = element.ids.map(id => `#${escapeIdentifier(id)}`).join('');
+    // A nested `&__element` or `&--modifier` keeps its `&`; the rest starts with `__` or `--`,
+    // which escaping leaves as it is.
     const classes = element.classes
-      .map(className => (className.startsWith('&') ? className : `.${className}`))
+      .map(className =>
+        className.startsWith('&')
+          ? `&${escapeIdentifier(className.slice(1))}`
+          : `.${escapeIdentifier(className)}`
+      )
       .join('');
     return `${element.tag}${ids}${classes}`;
   }
