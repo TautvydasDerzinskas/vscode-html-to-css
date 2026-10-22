@@ -337,6 +337,16 @@ describe('HtmlConverterService', () => {
       expect(convert('<div>', 'css')).toBe('div {}\n');
     });
 
+    it('checks markup followed by an inline source map in well under a second', () => {
+      // The JSX attribute pattern was tried from every character of the base64 run, which took
+      // seconds. The menu context keys run this check on each selection and clipboard change.
+      const sourceMap = `//# sourceMappingURL=data:application/json;base64,${'eyJ2ZXJzaW9uIjozfQ'.repeat(4000)}`;
+      const service = new HtmlConverterService(baseOptions);
+      const start = performance.now();
+      expect(service.isStringHtml(`<div className={styles.card}>x</div>\n${sourceMap}`)).toBe(true);
+      expect(performance.now() - start).toBeLessThan(1000);
+    });
+
     it('handles multiple ids', () => {
       expect(convert('<div id="id1 id2" class="test">Test</div>', 'css')).toBe(
         '#id1#id2.test {}\n'
