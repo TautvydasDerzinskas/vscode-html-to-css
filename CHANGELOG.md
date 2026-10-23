@@ -1,3 +1,9 @@
+## [1.7.3](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.7.2...v1.7.3) (2026-10-23)
+
+### Bug Fixes
+
+* escape class and id names in generated selectors ([#78](https://github.com/TautvydasDerzinskas/vscode-html-to-css/issues/78)) ([c7251e3](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/c7251e36d3c17e284b3a5527f338cfa302952fa4))
+
 ## [1.7.2](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.7.1...v1.7.2) (2026-10-22)
 
 ### Bug Fixes
