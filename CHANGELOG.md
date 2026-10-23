@@ -1,3 +1,9 @@
+## [1.7.4](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.7.3...v1.7.4) (2026-10-23)
+
+### Performance Improvements
+
+* find JSX attribute expressions in linear time ([#79](https://github.com/TautvydasDerzinskas/vscode-html-to-css/issues/79)) ([9ae22c7](https://github.com/TautvydasDerzinskas/vscode-html-to-css/commit/9ae22c78864cb59e5721e858ed3f073dc63fab2f))
+
 ## [1.7.3](https://github.com/TautvydasDerzinskas/vscode-html-to-css/compare/v1.7.2...v1.7.3) (2026-10-23)
 
 ### Bug Fixes
