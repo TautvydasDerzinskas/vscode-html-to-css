@@ -21,8 +21,14 @@ const JSX_COMMENT_PATTERN = /\{\s*\/\*[\s\S]*?\*\/\s*\}/g;
 const JSX_FRAGMENT_PATTERN = /<\/?>/g;
 const JSX_SPREAD_PATTERN = /\{\s*\.\.\.[^{}]*\}/g;
 
-/** An attribute whose value is a JSX expression, e.g. `onClick={...}`. */
-const ATTRIBUTE_EXPRESSION_PATTERN = /([A-Za-z_$][\w$:.-]*)\s*=\s*\{/g;
+/**
+ * A whole run of name characters, which is an attribute whose value is a JSX expression, e.g.
+ * `onClick={...}`, when group 3 finds the `={` after it. Group 1 holds the digits, `:`, `.` or `-`
+ * the name (group 2) cannot start with. Each run is matched once from its start: trying from every
+ * character instead rescans a long run, such as an inline base64 source map, from each of its
+ * characters, which takes seconds.
+ */
+const ATTRIBUTE_EXPRESSION_PATTERN = /([\d:.-]*)([A-Za-z_$][\w$:.-]*)(\s*=\s*\{)?|[\w$:.-]+/g;
 
 /** Plain-string `className="..."`, which only needs renaming. */
 const CLASS_NAME_ATTRIBUTE_PATTERN = /\bclassName(\s*=\s*["'])/g;
@@ -73,14 +79,21 @@ function resolveAttributeExpressions(source: string): string {
   let match = ATTRIBUTE_EXPRESSION_PATTERN.exec(source);
 
   while (match) {
+    if (!match[3]) {
+      // No `={` after this run; the search goes on after it.
+      match = ATTRIBUTE_EXPRESSION_PATTERN.exec(source);
+      continue;
+    }
+
     const openIndex = match.index + match[0].length - 1;
     const closeIndex = findClosingBrace(source, openIndex);
     if (closeIndex === -1) {
       break;
     }
 
-    result += source.slice(cursor, match.index);
-    if (match[1] === 'className' || match[1] === 'class') {
+    // The attribute starts at its name, after any characters the name cannot start with.
+    result += source.slice(cursor, match.index + match[1].length);
+    if (match[2] === 'className' || match[2] === 'class') {
       result += `class="${extractClassNames(source.slice(openIndex + 1, closeIndex))}"`;
     }
 
