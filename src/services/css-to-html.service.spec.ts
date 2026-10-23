@@ -99,6 +99,78 @@ describe('CssToHtmlService', () => {
     });
   });
 
+  describe('escaped names', () => {
+    it('reads escaped class names in a nested BEM element', () => {
+      // The space after the hex escape in `\32 xl` (class `2xl`) must not split the selector.
+      expect(convert('.card { &__title.\\32 xl\\:text-lg {} }')).toBe(
+        '<div class="card">\n  <div class="card__title 2xl:text-lg"></div>\n</div>\n'
+      );
+    });
+
+    it('keeps the children of a name that ends in a hex escape', () => {
+      // The space after `\31` ends the escape, so the children of `#\31` need one more.
+      expect(
+        convert(
+          '#\\31  { .a {} & .b {} } .card { &__title.\\32  { .c {} } } .\\33  { &__el { .d {} } }'
+        )
+      ).toBe(
+        [
+          '<div id="1">',
+          '  <div class="a"></div>',
+          '  <div class="b"></div>',
+          '</div>',
+          '<div class="card">',
+          '  <div class="card__title 2">',
+          '    <div class="c"></div>',
+          '  </div>',
+          '</div>',
+          '<div class="3">',
+          '  <div class="3__el">',
+          '    <div class="d"></div>',
+          '  </div>',
+          '</div>',
+          '',
+        ].join('\n')
+      );
+    });
+
+    it.each(['html', 'jsx'] as const)('keeps a six-digit escape as it is, in %s', syntax => {
+      // `\000031` needs no space to end it, so its children and `&.b` join as written.
+      const attribute = syntax === 'jsx' ? 'className' : 'class';
+      expect(
+        new CssToHtmlService().convert(
+          '.\\000031 { &__el { .a {} } } .x\\000031 { &.b {} }',
+          syntax
+        )
+      ).toBe(
+        [
+          `<div ${attribute}="1">`,
+          `  <div ${attribute}="1__el">`,
+          `    <div ${attribute}="a"></div>`,
+          '  </div>',
+          '</div>',
+          `<div ${attribute}="x1 b"></div>`,
+          '',
+        ].join('\n')
+      );
+    });
+
+    it('reads & after an escaped backslash as the parent selector', () => {
+      // `\\` is a literal backslash, so the `&` after it still nests (valid LESS).
+      expect(convert(String.raw`article { .prefix\\& { color: red; .child {} } }`)).toBe(
+        '<article></article>\n<div class="prefix\\article">\n  <div class="child"></div>\n</div>\n'
+      );
+      expect(convert(String.raw`.x\\\& {}`)).toBe('<div class="x\\&amp;"></div>\n');
+    });
+
+    it('reads an escaped & as part of a class name', () => {
+      expect(convert('.card { &__title.\\[\\&\\>\\*\\]\\:p-4 {} } .\\&-a {}')).toBe(
+        '<div class="card">\n  <div class="card__title [&amp;>*]:p-4"></div>\n</div>\n' +
+          '<div class="&amp;-a"></div>\n'
+      );
+    });
+  });
+
   describe('merging', () => {
     it('merges state classes and modifiers into one element', () => {
       expect(convert('.btn {} .btn.is-active {} .btn--primary {}')).toBe(
@@ -346,6 +418,53 @@ describe('CssToHtmlService', () => {
       const scss = new HtmlConverterService().convert(html, 'scss');
       expect(convert(scss)).toBe(expected.join('\n'));
     });
+
+    it.each(['css', 'scss', 'less'])(
+      'keeps class names and ids with special characters through HTML -> %s -> HTML',
+      flavour => {
+        const html =
+          '<div class="card"><h2 class="card__title 2xl 2xl:text-lg [&>*]:p-4">Title</h2>' +
+          '<p id="user.name" class="card__text w-1/2 md:flex -3">Text</p></div>';
+        expect(convert(new HtmlConverterService().convert(html, flavour))).toBe(
+          [
+            '<div class="card">',
+            '  <div class="card__title 2xl 2xl:text-lg [&amp;>*]:p-4"></div>',
+            '  <div id="user.name" class="card__text w-1/2 md:flex -3"></div>',
+            '</div>',
+            '',
+          ].join('\n')
+        );
+      }
+    );
+
+    it.each(['css', 'scss', 'less'])(
+      'keeps the children of numeric class names and ids through HTML -> %s -> HTML',
+      flavour => {
+        const html =
+          '<div id="1"><div class="2"><div class="card"><h2 class="card__title 3">' +
+          '<span class="x">x</span></h2></div></div></div>' +
+          '<div class="4"><span class="4__el"><b class="y">y</b></span></div>';
+        expect(convert(new HtmlConverterService().convert(html, flavour))).toBe(
+          [
+            '<div id="1">',
+            '  <div class="2">',
+            '    <div class="card">',
+            '      <div class="card__title 3">',
+            '        <div class="x"></div>',
+            '      </div>',
+            '    </div>',
+            '  </div>',
+            '</div>',
+            '<div class="4">',
+            '  <div class="4__el">',
+            '    <div class="y"></div>',
+            '  </div>',
+            '</div>',
+            '',
+          ].join('\n')
+        );
+      }
+    );
 
     it('also round-trips through flat CSS', () => {
       const html = '<div class="a"><div class="b"><span class="c"></span></div></div>';

@@ -103,6 +103,9 @@ In a `.css` file you get flat descendant selectors instead:
 }
 ```
 
+Class names and ids that CSS would misread, such as Tailwind's `md:flex`, `w-1/2` or `2xl`,
+are escaped: `.md\:flex`, `.w-1\/2`, `.\32 xl`.
+
 Clickable elements (`<a>`, `<button>`) also get state stubs:
 
 ```scss
@@ -355,7 +358,8 @@ gives you just:
 
 Entries can be class (`.container`), id (`#app`) or tag (`p`) selectors, and one entry may hold
 several, separated by commas. Classes are matched as written in the markup, before BEM
-conversion, so ignore `.card__title` rather than `&__title`. An element whose only class is
+conversion and escaping, so ignore `.card__title` rather than `&__title`, and `.md:flex` rather
+than `.md\:flex`. An element whose only class is
 ignored produces no rule — it does not fall back to a bare tag selector.
 
 `hideTags` keeps track of the original tag internally, so state stubs are still generated
